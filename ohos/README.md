@@ -22,7 +22,9 @@ Native 源路径与哈希。根/双 ABI publication 的 GMM 和 POM 由 KGP 自�
 group 为 io.github.qsxs.cpf.filekit，预览版本为
 0.16.0-cpf11-preview-<fork SHA 前 12 位>-<run id>-<attempt>。dialogs 根 publication 额外
 提供同版本 arkts-sources@zip，内容恰好为原字节 FileKitShareFactory.ets。每个 publication
-附带两份 MIT 许可、来源清单与 provenance，根 sources JAR 附完整源和许可。
+附带两份 MIT 许可、来源清单与 provenance。core 根 sources JAR 收录 22 份跨 ABI 共享的
+Kotlin 源，dialogs 根收录 19 份；dialogs 的两个 ABI leaf sources JAR 各在 19 份共享源码
+之外包含对应 ABI 的 MainHandler，共 20 份 Kotlin 源。两份根 sources JAR 均附两份许可。
 
 ## 输入与隔离
 
@@ -73,14 +75,31 @@ Git 凭据，也不访问 Android/iOS 工程或设备。
 
 各阶段以真实执行结果写日志、退出码和收据；失败不得复用已有收据。Verify 逐一核对两个模块的根与双
 ABI 六份 publication 的坐标、owner/available-at、依赖版本及边、GMM API 变体引用的 metadata JAR
-和对应 ABI KLIB 的大小与哈希、KLIB 目标与非空 IR/linkdata、KGP 编译输出、两份完整 sources JAR、
+和对应 ABI KLIB 的大小与哈希、KLIB 目标与非空 IR/linkdata、KGP 编译输出、两份根 sources JAR 的预期成员、
 许可、provenance 和 ETS ZIP。dialogs 根 POM 对 core 的 scope 为 runtime，ABI leaf 对对应 core
 的 scope 为 compile。遇到未知或缺失字段直接失败并保留证据；
 publication-verification.json 仅在全部检查通过时生成。
 
+## 当前 producer、Pages 与 consumer 编译
+
+[producer 40864370116/1](https://github.com/qsxs/cpf-port-tooling/actions/runs/40864370116/attempts/1) 使用 FileKit source `22683094fd5d30ef08441d073c797161804b9dc4` 和工作流 `e0116f36d402498b7a7fa2a6a37397ee5ec5b467`，完成 Metadata、OHOS x64/arm64、Publish 和 Verify；这些结果仅针对该次 producer。Metadata 的 LLVM 下载曾出现 EOF，重试后最终成功，不能将全部构建耗时归因于该下载问题。
+
+两根 GAV 使用同一预览版本：
+
+```text
+io.github.qsxs.cpf.filekit:filekit-core:0.16.0-cpf11-preview-22683094fd5d-40864370116-1
+io.github.qsxs.cpf.filekit:filekit-dialogs:0.16.0-cpf11-preview-22683094fd5d-40864370116-1
+```
+
+[Pages 源提交 `60752c680a23`](https://github.com/qsxs/cpf-maven/commit/60752c680a23322f8af23d9370677cb077011d31) 的 285 个文件、1,464,278 字节经匿名 HTTP 核对 285/285 与 staging 一致。dialogs 根同版 `arkts-sources@zip` 仅含 `FileKitShareFactory.ets`；上游与社区两份 MIT 许可均保留。
+
+[consumer 40881058391/1](https://github.com/qsxs/cpf-port-tooling/actions/runs/40881058391/attempts/1) 已成功，使用 workflow `c4433b0c58150fafaa47696a6a72bc334e1d9d9b`、Gradle 8.11.1、JDK 17 和 Kotlin 2.4.20-0.1.0-08；source、version 与 producer fingerprint `9b6d8d85d7cb6b6ce547b55ae699f5a930433a87ce6e15b66bba96fecc6fb80c` 一致。Metadata、OHOS x64 和 arm64 三个任务实际执行成功；两个 ABI 分别选取对应平台的 core/dialogs KLIB，并核实 dialogs → core 传递边。49 次匿名请求均为 HTTP 200，其中归档的 36 份元数据可独立复核哈希；证据 ZIP 未包含编译输出二进制，不能独立重哈这些输出。
+
+旧 P4 的完整 63 项矩阵、D019 内部短写计数、D022 原子回执及分享 drain、K3、其余 HEIC/图像矩阵和物理 ARM 等仍待验；P6 分享仍暂缓且非 PASS，OHOS 文件业务暂为 UTF-8，GBK 与共享 CSV 模板兼容延期。探针只覆盖 picker/readBytes、三参 init/session、saver、source/sink、两种压缩重载和 shareFile 调用的编译，不证明运行行为。consumer 收据中的 link、runtime、device、armDevice 和 ArkTS 编译均为 NOT_RUN。Android/iOS 平台及主工程 Gradle 门禁本次未验证；Android/iOS 和系统 SDK 不变，App 引用尚未切换。
+
 ## 验证边界
 
-本配方仅准备云端 producer 和后续消费，不代表这些构建或运行已经通过。原 P4 的独立 GAV consumer、
+上述结果仅证明该固定 source 的 producer 和独立 consumer 三目标编译；consumer 链接与运行尚未验证。原 P4 的完整独立 GAV consumer 验收、
 HAP/文件 UI、ARM 真机、文件原字节与大文件、picker 取消及迟到回调、owner 重建交错、EXIF 1–8、
 真实接收方分享读回、资源多轮收敛、受影响 Android/iOS 回归等仍需分别验证。目录/相机选择、
 相册写入及导入 FD 的 append 等实际源码中的明确限制保持原样，不因发布而扩大支持声明。
