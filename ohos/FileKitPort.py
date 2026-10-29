@@ -489,7 +489,7 @@ def published_dependencies(variants, pins, version):
 
 def require_variant_artifact(variants, directory, expected):
     if not variants:
-        raise RuntimeError("Required API variant is missing")
+        raise RuntimeError("Required publication variant is missing")
     for variant in variants:
         matches = []
         for entry in variant.get("files", []):
@@ -497,10 +497,10 @@ def require_variant_artifact(variants, directory, expected):
             if path == expected.resolve():
                 actual = file_record(path)
                 if (entry.get("size"), entry.get("sha256")) != (actual["size"], actual["sha256"]) or not actual["size"]:
-                    raise RuntimeError("API variant artifact size/SHA-256 differs: " + str(path))
+                    raise RuntimeError("Publication variant artifact size/SHA-256 differs: " + str(path))
                 matches.append(entry)
         if len(matches) != 1:
-            raise RuntimeError("API variant does not reference its published artifact: " + str(expected))
+            raise RuntimeError("Publication variant does not reference its published artifact: " + str(expected))
 
 
 def require_root_api_redirect(variants, target, group, name, version, root_directory, gmm_path, repository):
@@ -553,6 +553,53 @@ def verify_native_payload(archive, target):
         if not members or not archive.read(members[0]):
             raise RuntimeError("Native Klib payload is empty: " + prefix)
     return unique
+
+
+def source_variants(variants, target):
+    expected_platform = "native" if target else "common"
+    return [item for item in variants
+            if item.get("attributes", {}).get("org.gradle.category") == "documentation"
+            and item.get("attributes", {}).get("org.gradle.docstype") == "sources"
+            and item.get("attributes", {}).get("org.gradle.usage") == "kotlin-runtime"
+            and item.get("attributes", {}).get("org.jetbrains.kotlin.platform.type") == expected_platform
+            and item.get("attributes", {}).get("org.jetbrains.kotlin.native.target") == target]
+
+
+def require_sources_redirect(variants, target, group, name, version, root_directory, gmm_path, repository):
+    matches = source_variants(variants, target)
+    if not matches:
+        raise RuntimeError("Root native sources redirect is missing: " + name)
+    for item in matches:
+        link = item.get("available-at")
+        if not link or (link.get("group"), link.get("module"), link.get("version")) != (group, name, version) or \
+                checked_url(root_directory, link["url"], repository) != gmm_path.resolve():
+            raise RuntimeError("Root native sources redirect differs: " + name)
+
+
+def verify_sources_archive(archive, sources, module, target, license_members, manifest_members):
+    leaf = {None: None, "ohos_x64": "ohosX64Main", "ohos_arm64": "ohosArm64Main"}
+    if target not in leaf or module not in MODULES:
+        raise RuntimeError("Unexpected sources publication target")
+    selected = [row for row in sources if row["module"] == module and
+                (row["sourceSet"] not in ("ohosX64Main", "ohosArm64Main") or row["sourceSet"] == leaf[target])]
+    expected = {row["member"]: (row["size"], row["sha256"]) for row in selected}
+    expected_count = 22 if module == "filekit-core" else 20 if target else 19
+    if len(expected) != len(selected) or len(expected) != expected_count:
+        raise RuntimeError("Expected sources mapping differs: " + module)
+    entries = [item for item in archive.infolist() if item.filename.endswith(".kt")]
+    if len(entries) != len(expected) or len({item.filename for item in entries}) != len(entries):
+        raise RuntimeError("Source JAR Kotlin member count differs: " + module)
+    actual = {item.filename: (item.file_size, digest(archive.read(item))) for item in entries}
+    if actual != expected:
+        raise RuntimeError("Source JAR source mapping differs: " + module)
+    for member, data in license_members.items():
+        matches = [item for item in archive.infolist() if item.filename == member and not item.is_dir()]
+        if len(matches) != 1 or archive.read(matches[0]) != data:
+            raise RuntimeError("Source JAR license differs: " + module)
+    for member, data in manifest_members.items():
+        matches = [item for item in archive.infolist() if item.filename == member and not item.is_dir()]
+        if len(matches) != 1 or archive.read(matches[0]) != data:
+            raise RuntimeError("Source JAR source manifest differs: " + module)
 
 
 def verify_publication(value, facts):
@@ -632,6 +679,16 @@ def verify_publication(value, facts):
             for filename, source in (("source-manifest.json", "source-manifest.json"), ("provenance.json", "provenance.json")):
                 if physical(directory / (prefix + "-" + filename)).read_bytes() != physical(work / source).read_bytes():
                     raise RuntimeError("Published provenance companion differs: " + name)
+            source_jar = directory / (prefix + "-sources.jar")
+            if target:
+                require_sources_redirect(root["variants"], target, GROUP, name, value["version"],
+                                         root_directory, gmm_path, repository)
+            require_variant_artifact(source_variants(gmm["variants"], target), directory, source_jar)
+            license_members = {"META-INF/licenses/" + key + "-LICENSE": blobs[source] for key, source in licenses.items()}
+            manifest_members = {"META-INF/upstream/" + name: physical(work / name).read_bytes()
+                                for name in ("source-manifest.json", "compiled-source-manifest.json")}
+            with zipfile.ZipFile(physical(source_jar)) as archive:
+                verify_sources_archive(archive, sources, module, target, license_members, manifest_members)
             if target:
                 klib = directory / (prefix + ".klib")
                 with zipfile.ZipFile(physical(klib)) as archive:
@@ -659,22 +716,6 @@ def verify_publication(value, facts):
                     if not matches:
                         raise RuntimeError("No compiler output could be matched to the published Klib: " + name)
             else:
-                source_jar = directory / (prefix + "-sources.jar")
-                expected = {row["member"]: (row["size"], row["sha256"]) for row in sources if row["module"] == module}
-                with zipfile.ZipFile(physical(source_jar)) as archive:
-                    entries = [item for item in archive.infolist() if item.filename.endswith(".kt")]
-                    if len(entries) != len(expected) or len({item.filename for item in entries}) != len(entries):
-                        raise RuntimeError("Source JAR Kotlin member count differs: " + module)
-                    actual = {item.filename: (item.file_size, digest(archive.read(item))) for item in entries}
-                    if actual != expected:
-                        raise RuntimeError("Source JAR source mapping differs: " + module)
-                    for key, source in licenses.items():
-                        if archive.read("META-INF/licenses/" + key + "-LICENSE") != blobs[source]:
-                            raise RuntimeError("Source JAR license differs: " + module)
-                    if archive.read("META-INF/upstream/source-manifest.json") != physical(work / "source-manifest.json").read_bytes():
-                        raise RuntimeError("Source JAR source manifest differs: " + module)
-                    if archive.read("META-INF/upstream/compiled-source-manifest.json") != physical(work / "compiled-source-manifest.json").read_bytes():
-                        raise RuntimeError("Source JAR compiled manifest differs: " + module)
                 evidence = read_json(work / "evidence/recordFileKitMetadata.json")
                 producer = next(item for item in evidence["producers"] if item["task"] == ":" + module + ":allMetadataJar")
                 jars = [item for item in producer["outputs"] if item["path"].endswith(".jar")]
