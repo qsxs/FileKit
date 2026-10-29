@@ -1,0 +1,183 @@
+--- a/vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt
++++ b/overlay/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt
+@@ -4,0 +5 @@
++import io.github.vinceglb.filekit.exceptions.FileKitException
+@@ -7,2 +8 @@
+-import kotlinx.coroutines.flow.Flow
+-import kotlinx.coroutines.flow.flow
++import kotlinx.coroutines.CancellationException
+@@ -10,0 +11,4 @@
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.FlowCollector
++import kotlinx.coroutines.flow.collect
++import kotlinx.coroutines.flow.flow
+@@ -41 +44,0 @@
+-    title: String?,
+@@ -44,26 +47,51 @@
+-): Flow<FileKitPickerState<List<PlatformFile>>> = flow {
+-    val request = buildJsonObject {
+-        put("operation", "pick")
+-        put("type", when (type) {
+-            FileKitType.Image -> "image"
+-            FileKitType.Video -> "video"
+-            FileKitType.ImageAndVideo -> "media"
+-            is FileKitType.File -> "file"
+-        })
+-        put("maxItems", if (mode is PickerMode.Multiple) mode.maxItems ?: 50 else 1)
+-        if (type is FileKitType.File) putJsonArray("extensions") {
+-            type.extensions?.forEach { add(it.removePrefix(".")) }
+-        }
+-        directory?.let { put("directory", it.path) }
+-    }
+-    val files = OhosSystemDialogs.call(request)
+-    if (files.isNullOrEmpty()) {
+-        emit(FileKitPickerState.Cancelled)
+-    } else {
+-        // No background import: the native descriptor is ready before completion.
+-        try {
+-            emit(FileKitPickerState.Started(files.size))
+-            emit(FileKitPickerState.Completed(files))
+-        } catch (error: Throwable) {
+-            files.forEach { it.close() }
+-            throw error
++): Flow<FileKitPickerState<List<PlatformFile>>> {
++    val capturedCall = OhosSystemDialogs.captureOwnerCall()
++    return object : Flow<FileKitPickerState<List<PlatformFile>>> {
++        override suspend fun collect(collector: FlowCollector<FileKitPickerState<List<PlatformFile>>>) {
++            var untransferredFiles: List<PlatformFile>? = null
++            try {
++                flow<FileKitPickerState<List<PlatformFile>>> {
++                    val maximum = if (mode is PickerMode.Multiple) mode.maxItems ?: 50 else 1
++                    require(maximum in 1..50) { "maxItems must be in 1..50" }
++                    val request = buildJsonObject {
++                        put("operation", "pick")
++                        put("type", when (type) {
++                            FileKitType.Image -> "image"
++                            FileKitType.Video -> "video"
++                            FileKitType.ImageAndVideo -> "media"
++                            is FileKitType.File -> "file"
++                        })
++                        put("maxItems", maximum)
++                        if (type is FileKitType.File) putJsonArray("extensions") {
++                            type.extensions?.forEach { add(normalizedExtension(it)) }
++                        }
++                        directory?.let { put("directory", it.path) }
++                    }
++                    // 只包装平台调用失败；下游收集器的异常和协程取消仍按原样传播。
++                    val files = try {
++                        capturedCall(request)
++                    } catch (cancelled: CancellationException) {
++                        throw cancelled
++                    } catch (invalid: IllegalArgumentException) {
++                        throw invalid
++                    } catch (error: Throwable) {
++                        emit(FileKitPickerState.Failed(FileKitPickerException("The OHOS file picker could not complete the operation.", error)))
++                        return@flow
++                    }
++                    if (files.isNullOrEmpty()) {
++                        emit(FileKitPickerState.Cancelled)
++                    } else {
++                        untransferredFiles = files
++                        emit(FileKitPickerState.Started(files.size))
++                        emit(FileKitPickerState.Completed(files))
++                    }
++                }.collect { state ->
++                    // 上游 flow 的取消/context 检查已经通过；进入下游即移交 Completed 的 owner。
++                    // first/take 的正常短路和其它下游异常都原样传播，不再撤销已移交的句柄。
++                    if (state is FileKitPickerState.Completed) untransferredFiles = null
++                    collector.emit(state)
++                }
++            } finally {
++                // Started 后短路或 Completed 尚未进入下游时取消，句柄仍归本层负责。
++                untransferredFiles?.forEach { it.close() }
++            }
+@@ -75,5 +103,3 @@
+-    title: String?, directory: PlatformFile?, dialogSettings: FileKitDialogSettings,
+-): PlatformFile? = OhosSystemDialogs.call(buildJsonObject {
+-    put("operation", "directory")
+-    directory?.let { put("directory", it.path) }
+-})?.firstOrNull()
++    directory: PlatformFile?,
++    dialogSettings: FileKitDialogSettings,
++): PlatformFile? = throw FileKitDialogException("Directory picking is not supported on OHOS")
+@@ -81,2 +107,6 @@
+-public actual suspend fun FileKit.openFileSaver(
+-    suggestedName: String, extension: String?, directory: PlatformFile?, dialogSettings: FileKitDialogSettings,
++internal actual suspend fun FileKit.platformOpenFileSaver(
++    suggestedName: String,
++    defaultExtension: String?,
++    allowedExtensions: Set<String>?,
++    directory: PlatformFile?,
++    dialogSettings: FileKitDialogSettings,
+@@ -84,3 +114,3 @@
+-    require(suggestedName.isNotBlank() && '/' !in suggestedName && '\u0000' !in suggestedName)
+-    require(extension == null || ('/' !in extension && '\u0000' !in extension))
+-    val suffix = extension?.removePrefix(".")?.takeIf { it.isNotEmpty() }
++    require(suggestedName.isNotBlank() && '/' !in suggestedName && '\u0000' !in suggestedName) { "Invalid suggested filename" }
++    val suffix = normalizeFileSaverExtension(defaultExtension)?.let(::normalizedExtension)
++    val extensions = buildFileSaverAllowedFileTypes(defaultExtension, allowedExtensions)?.map(::normalizedExtension)
+@@ -88,5 +118,18 @@
+-    return OhosSystemDialogs.call(buildJsonObject {
+-        put("operation", "save")
+-        put("name", name)
+-        directory?.let { put("directory", it.path) }
+-    })?.firstOrNull()
++    return try {
++        OhosSystemDialogs.call(buildJsonObject {
++            put("operation", "save")
++            put("name", name)
++            extensions?.let { putJsonArray("extensions") { it.forEach { extension -> add(extension) } } }
++            directory?.let { put("directory", it.path) }
++        })?.singleOrNull()
++    } catch (cancelled: CancellationException) {
++        throw cancelled
++    } catch (invalid: IllegalArgumentException) {
++        throw invalid
++    } catch (error: Throwable) {
++        throw FileKitDialogException("The OHOS file saver could not complete the operation.", error)
++    }
++}
++
++private fun normalizedExtension(value: String): String = value.removePrefix(".").also {
++    require(it.isNotBlank() && '/' !in it && '\u0000' !in it && ';' !in it && '|' !in it) { "Invalid file extension" }
+@@ -97,5 +140,11 @@
+-        runCatching { OhosSystemDialogs.call(buildJsonObject {
+-        put("operation", "open")
+-        put("path", file.path)
+-        put("mime", file.mimeType()?.toString() ?: "application/octet-stream")
+-        }) }.onFailure(openFileSettings.onError)
++        try {
++            OhosSystemDialogs.call(buildJsonObject {
++                put("operation", "open")
++                put("path", file.path)
++                put("mime", file.mimeType()?.toString() ?: "application/octet-stream")
++            })
++        } catch (cancelled: CancellationException) {
++            throw cancelled
++        } catch (error: Throwable) {
++            openFileSettings.onError(error)
++        }
+@@ -110,5 +159 @@
+-): PlatformFile? = OhosSystemDialogs.call(buildJsonObject {
+-    put("operation", "camera")
+-    put("path", destinationFile.path)
+-    put("front", cameraFacing == FileKitCameraFacing.Front)
+-})?.firstOrNull()
++): PlatformFile? = throw FileKitDialogException("Camera picking is not supported on OHOS")
+@@ -121,4 +166,12 @@
+-    OhosSystemDialogs.call(buildJsonObject {
+-        put("operation", "share")
+-        putJsonArray("paths") { files.forEach { add(it.path) } }
+-    })
++    try {
++        OhosSystemDialogs.call(buildJsonObject {
++            put("operation", "share")
++            putJsonArray("paths") { files.forEach { add(it.path) } }
++        })
++    } catch (cancelled: CancellationException) {
++        throw cancelled
++    } catch (invalid: IllegalArgumentException) {
++        throw invalid
++    } catch (error: Throwable) {
++        throw FileKitDialogException("The OHOS share operation could not complete.", error)
++    }

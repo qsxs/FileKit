@@ -1,0 +1,169 @@
+--- a/vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt
++++ b/overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt
+@@ -4,0 +5 @@
++import io.github.vinceglb.filekit.utils.div
+@@ -9,0 +11 @@
++import kotlinx.io.Buffer
+@@ -14 +15,0 @@
+-import io.github.vinceglb.filekit.utils.div
+@@ -24,0 +26,3 @@
++public actual fun PlatformFile(base: PlatformFile, child: String): PlatformFile =
++    base.withPath(base.toKotlinxIoPath() / child)
++
+@@ -26 +30,2 @@
+-    if (descriptor != null) true else SystemFileSystem.metadataOrNull(toKotlinxIoPath())?.isRegularFile ?: false
++    descriptor?.borrowed { fd -> descriptorMode(fd) == S_IFREG }
++        ?: (SystemFileSystem.metadataOrNull(toKotlinxIoPath())?.isRegularFile ?: false)
+@@ -30 +35,2 @@
+-    if (descriptor != null) false else SystemFileSystem.metadataOrNull(toKotlinxIoPath())?.isDirectory ?: false
++    descriptor?.borrowed { fd -> descriptorMode(fd) == S_IFDIR }
++        ?: (SystemFileSystem.metadataOrNull(toKotlinxIoPath())?.isDirectory ?: false)
+@@ -36 +42 @@
+-public actual fun PlatformFile.exists(): Boolean =
++public actual fun PlatformFile.exists(): Boolean = withScopedAccess {
+@@ -37,0 +44 @@
++}
+@@ -40,6 +47,5 @@
+-    descriptor?.let { handle ->
+-        memScoped {
+-            val info = alloc<stat>()
+-            if (fstat(handle.fd, info.ptr) != 0) -1L else info.st_size
+-        }
+-    } ?: (SystemFileSystem.metadataOrNull(toKotlinxIoPath())?.size ?: -1)
++    descriptor?.borrowed { fd -> memScoped {
++        val info = alloc<stat>()
++        if (fstat(fd, info.ptr) != 0) throw kotlinx.io.IOException("Cannot stat descriptor")
++        info.st_size
++    } } ?: (SystemFileSystem.metadataOrNull(toKotlinxIoPath())?.size ?: -1)
+@@ -49 +55 @@
+-    if (descriptor != null) null else toKotlinxIoPath().parent?.let(::PlatformFile)
++    if (descriptor != null) null else toKotlinxIoPath().parent?.let(::withPath)
+@@ -52 +58 @@
+-    if (descriptor != null) this else PlatformFile(SystemFileSystem.resolve(toKotlinxIoPath()))
++    if (descriptor != null) this else withPath(SystemFileSystem.resolve(toKotlinxIoPath()))
+@@ -55,2 +61,12 @@
+-public actual fun PlatformFile.source(): RawSource = withScopedAccess {
+-    descriptor?.source() ?: SystemFileSystem.source(toKotlinxIoPath())
++public actual fun PlatformFile.source(): RawSource {
++    descriptor?.let { return it.source() }
++    val accessGranted = startAccessingSecurityScopedResource()
++    try {
++        return ScopedRawSource(
++            delegate = SystemFileSystem.source(toKotlinxIoPath()),
++            onClose = { if (accessGranted) stopAccessingSecurityScopedResource() },
++        )
++    } catch (error: Throwable) {
++        if (accessGranted) stopAccessingSecurityScopedResource()
++        throw error
++    }
+@@ -59,2 +75,12 @@
+-public actual fun PlatformFile.sink(append: Boolean): RawSink = withScopedAccess {
+-    descriptor?.sink(append) ?: SystemFileSystem.sink(toKotlinxIoPath(), append)
++public actual fun PlatformFile.sink(append: Boolean): RawSink {
++    descriptor?.let { return it.sink(append) }
++    val accessGranted = startAccessingSecurityScopedResource()
++    try {
++        return ScopedRawSink(
++            delegate = SystemFileSystem.sink(toKotlinxIoPath(), append),
++            onClose = { if (accessGranted) stopAccessingSecurityScopedResource() },
++        )
++    } catch (error: Throwable) {
++        if (accessGranted) stopAccessingSecurityScopedResource()
++        throw error
++    }
+@@ -63,3 +89,13 @@
+-public actual suspend fun PlatformFile.delete(mustExist: Boolean): Unit =
+-    withContext(Dispatchers.IO) {
+-        SystemFileSystem.delete(path = toKotlinxIoPath(), mustExist = mustExist)
++public actual fun PlatformFile.createDirectories(mustCreate: Boolean): Unit =
++    withScopedAccess {
++        SystemFileSystem.createDirectories(toKotlinxIoPath(), mustCreate)
++    }
++
++public actual suspend fun PlatformFile.delete(mustExist: Boolean, recursively: Boolean): Unit =
++    withScopedAccess {
++        withContext(Dispatchers.IO) {
++            if (!deleteIfSymbolicLink()) {
++                if (recursively) deleteChildren()
++                SystemFileSystem.delete(path = toKotlinxIoPath(), mustExist = mustExist)
++            }
++        }
+@@ -71,4 +107,9 @@
+-            SystemFileSystem.atomicMove(
+-                source = toKotlinxIoPath(),
+-                destination = destination.toKotlinxIoPath(),
+-            )
++            destination.withScopedAccess { scopedDestination ->
++                val resolvedDestination = scopedDestination.resolveAtomicMoveDestination(
++                    source = this@atomicMove,
++                )
++                SystemFileSystem.atomicMove(
++                    source = toKotlinxIoPath(),
++                    destination = resolvedDestination.toKotlinxIoPath(),
++                )
++            }
+@@ -77,0 +119,7 @@
++private fun PlatformFile.resolveAtomicMoveDestination(source: PlatformFile): PlatformFile {
++    if (isDirectory()) {
++        return withPath(toKotlinxIoPath() / source.name)
++    }
++    return this
++}
++
+@@ -79 +127 @@
+-    source: PlatformFile
++    source: PlatformFile,
+@@ -82 +130 @@
+-        PlatformFile(toKotlinxIoPath() / source.name)
++        withPath(toKotlinxIoPath() / source.name)
+@@ -86,0 +135,50 @@
++
++private fun descriptorMode(fd: Int): Int = memScoped {
++    val info = alloc<stat>()
++    if (fstat(fd, info.ptr) != 0) throw kotlinx.io.IOException("Cannot stat descriptor")
++    info.st_mode.toInt() and S_IFMT
++}
++
++private class ScopedRawSource(
++    private val delegate: RawSource,
++    private val onClose: () -> Unit,
++) : RawSource {
++    private var closed = false
++
++    override fun readAtMostTo(sink: Buffer, byteCount: Long): Long = delegate.readAtMostTo(sink, byteCount)
++
++    override fun close() {
++        if (closed) return
++        closed = true
++        try {
++            delegate.close()
++        } finally {
++            onClose()
++        }
++    }
++}
++
++private class ScopedRawSink(
++    private val delegate: RawSink,
++    private val onClose: () -> Unit,
++) : RawSink {
++    private var closed = false
++
++    override fun write(source: Buffer, byteCount: Long) {
++        delegate.write(source, byteCount)
++    }
++
++    override fun flush() {
++        delegate.flush()
++    }
++
++    override fun close() {
++        if (closed) return
++        closed = true
++        try {
++            delegate.close()
++        } finally {
++            onClose()
++        }
++    }
++}

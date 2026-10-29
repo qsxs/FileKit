@@ -1,0 +1,100 @@
+--- a/vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/OhosDescriptor.kt
++++ b/overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/OhosDescriptor.kt
+@@ -1,2 +1 @@
+-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlin.experimental.ExperimentalNativeApi::class,
+-    kotlin.concurrent.atomics.ExperimentalAtomicApi::class)
++@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlin.experimental.ExperimentalNativeApi::class)
+@@ -13 +11,0 @@
+-import kotlin.concurrent.atomics.AtomicInt
+@@ -19,2 +17 @@
+-    private val cleaner = createCleaner(state) { it.close() }
+-    val fd: Int get() = state.fd
++    private val cleaner = createCleaner(state) { it.destroy() }
+@@ -22,0 +20,5 @@
++    fun acquire(): OhosDescriptor = OhosDescriptor(duplicate(), uri, name)
++    fun <T> borrowed(block: (Int) -> T): T {
++        val borrowed = duplicate()
++        return try { block(borrowed) } finally { platform.posix.close(borrowed) }
++    }
+@@ -24,0 +27,2 @@
++        // dup 共享 OFD，不能设置 O_APPEND 影响其它流；不以初始 EOF+pwrite 冒充追加。
++        if (append) throw IOException("Appending to imported picker descriptors is not supported on OHOS")
+@@ -27,4 +31,2 @@
+-            if (!append && ftruncate(output, 0) != 0) throw ioError("truncate")
+-            val offset = if (append) lseek(output, 0, SEEK_END) else 0L
+-            if (offset < 0) throw ioError("seek")
+-            return DescriptorSink(output, offset)
++            if (ftruncate(output, 0) != 0) throw ioError("truncate")
++            return DescriptorSink(output)
+@@ -36 +38 @@
+-    private fun duplicate(): Int = dup(fd).also { if (it < 0) throw ioError("dup") }
++    private fun duplicate(): Int = state.duplicate()
+@@ -40,6 +42,32 @@
+-    private val value = AtomicInt(fd)
+-    val isOpen: Boolean get() = value.load() >= 0
+-    val fd: Int get() = value.load().also { check(it >= 0) { "Picker file is closed" } }
+-    fun close() {
+-        val previous = value.exchange(-1)
+-        if (previous >= 0) platform.posix.close(previous)
++    private val mutex = nativeHeap.alloc<pthread_mutex_t>()
++    private var value = fd
++    init {
++        val status = pthread_mutex_init(mutex.ptr, null)
++        if (status != 0) {
++            nativeHeap.free(mutex.ptr)
++            platform.posix.close(fd)
++            throw IOException("Cannot initialize descriptor mutex: $status")
++        }
++    }
++    private inline fun <T> locked(block: () -> T): T {
++        check(pthread_mutex_lock(mutex.ptr) == 0) { "Cannot lock descriptor" }
++        return try { block() } finally { pthread_mutex_unlock(mutex.ptr) }
++    }
++    val isOpen: Boolean get() = locked { value >= 0 }
++    fun <T> using(block: (Int) -> T): T = locked { block(checkedFd()) }
++    private fun checkedFd(): Int = value.also { check(it >= 0) { "Picker file is closed" } }
++    // 开放检查与 dup 必须在同一短同步区，防止 close 后 FD 编号被其它文件复用。
++    fun duplicate(): Int = locked {
++        dup(checkedFd()).also { if (it < 0) throw ioError("dup") }
++    }
++    fun close() = locked {
++        if (value >= 0) {
++            val previous = value
++            value = -1
++            platform.posix.close(previous)
++        }
++    }
++    fun destroy() {
++        close()
++        pthread_mutex_destroy(mutex.ptr)
++        nativeHeap.free(mutex.ptr)
+@@ -50,0 +79,2 @@
++    @Suppress("unused")
++    private val cleaner = createCleaner(state) { it.destroy() }
+@@ -52 +82 @@
+-    override fun readAtMostTo(sink: Buffer, byteCount: Long): Long {
++    override fun readAtMostTo(sink: Buffer, byteCount: Long): Long = state.using { fd ->
+@@ -54,2 +84 @@
+-        val fd = state.fd
+-        if (byteCount == 0L) return 0L
++        if (byteCount == 0L) return@using 0L
+@@ -64 +93 @@
+-        if (count == 0L) return -1
++        if (count == 0L) return@using -1L
+@@ -67 +96 @@
+-        return count
++        count
+@@ -72 +101 @@
+-private class DescriptorSink(fd: Int, private var offset: Long) : RawSink {
++private class DescriptorSink(fd: Int) : RawSink {
+@@ -74 +103,4 @@
+-    override fun write(source: Buffer, byteCount: Long) {
++    private var offset = 0L
++    @Suppress("unused")
++    private val cleaner = createCleaner(state) { it.destroy() }
++    override fun write(source: Buffer, byteCount: Long): Unit = state.using { fd ->
+@@ -76 +107,0 @@
+-        val fd = state.fd
+@@ -93 +124 @@
+-    override fun flush() { if (fsync(state.fd) != 0) throw ioError("flush") }
++    override fun flush(): Unit = state.using { fd -> if (fsync(fd) != 0) throw ioError("flush") }

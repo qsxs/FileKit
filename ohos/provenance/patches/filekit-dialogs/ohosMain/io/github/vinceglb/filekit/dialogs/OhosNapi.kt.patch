@@ -1,0 +1,23 @@
+--- a/vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosNapi.kt
++++ b/overlay/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/OhosNapi.kt
+@@ -9 +9 @@
+-/** Values returned here are borrowed handles: use them only inside the current handle scope. */
++/** 返回值是借用的 NAPI handle，只能在当前 handle scope 内使用。 */
+@@ -40 +40 @@
+-        // System modules do not require the application's bundle/module name.
++        // 系统模块不需要应用的 bundle/module 名称。
+@@ -61 +61 @@
+-        require(length.value < 16u * 1024u * 1024u) { "System string is too large" }
++        if (length.value >= 16u * 1024u * 1024u) throw FileKitException("System string is too large")
+@@ -74 +74 @@
+-        require(length.value <= 10_000u) { "System result contains too many items" }
++        if (length.value > 10_000u) throw FileKitException("System result contains too many items")
+@@ -94 +94 @@
+-    /** Each JS function owns its own StableRef; both callbacks may share one Kotlin completion. */
++    /** 每个 JS 函数各自拥有 StableRef；两个回调可共享同一个 Kotlin 完成对象。 */
+@@ -116 +116 @@
+-    // Promise<void> still passes undefined; make zero-argument callbacks equivalent.
++    // Promise<void> 传递 undefined；无参回调按同样语义处理。
+@@ -122 +122 @@
+-        // No Kotlin exception may cross the C callback boundary. Completion handles failures.
++        // Kotlin 异常不能越过 C 回调边界；完成对象负责交付失败。

@@ -1,0 +1,693 @@
+{
+  "schemaVersion": 1,
+  "archives": [
+    {
+      "kind": "upstream",
+      "repository": "vinceglb/FileKit",
+      "commit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "url": "https://codeload.github.com/vinceglb/FileKit/tar.gz/e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "finalUrl": "https://codeload.github.com/vinceglb/FileKit/tar.gz/e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "startedAt": "2026-10-21T16:27:01.841168+00:00",
+      "finishedAt": "2026-10-21T16:27:04.851731+00:00",
+      "status": 200,
+      "bytes": 30518464,
+      "sha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "members": 1406,
+      "archive": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "extracted": false,
+      "selectedForImplementation": false
+    },
+    {
+      "kind": "community",
+      "repository": "HachimiWorld/FileKit-ohos",
+      "commit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "url": "https://codeload.github.com/HachimiWorld/FileKit-ohos/tar.gz/f44915a297d555a614b965f2245c09ade5183c8a",
+      "finalUrl": "https://codeload.github.com/HachimiWorld/FileKit-ohos/tar.gz/f44915a297d555a614b965f2245c09ade5183c8a",
+      "startedAt": "2026-10-21T16:27:01.842407+00:00",
+      "finishedAt": "2026-10-21T16:27:04.202822+00:00",
+      "status": 200,
+      "bytes": 3153270,
+      "sha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "members": 1096,
+      "archive": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "extracted": false,
+      "selectedForImplementation": false
+    }
+  ],
+  "files": [
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "LICENSE",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/LICENSE",
+      "bytes": 1075,
+      "sha256": "5ceb0f372844932c328a4d34bfb6b1903b157d4b3467c5de484bfec8e5aea7ca",
+      "rawPath": "vendor/upstream/LICENSE"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/FileKit.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/FileKit.kt",
+      "bytes": 65,
+      "sha256": "7d1c8067e64cdb4f19ac45f8bcfc61d51069ee23b3f8c8538befe88925a4017a",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/FileKit.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/ImageFormat.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/ImageFormat.kt",
+      "bytes": 219,
+      "sha256": "db00cf1ee6cc218416eab8cb188c6f2154667907edd6d34eb9e459f6cbe05391",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/ImageFormat.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFile.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFile.kt",
+      "bytes": 4120,
+      "sha256": "c9b44d9fcbbd56247e5cfa0bd26a832e774f8d21e17011cace982abfbebcb2a4",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFile.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.kt",
+      "bytes": 479,
+      "sha256": "b9cc38a0ac99efd8f562eeaeed68367f9a6cf66b808b02fc20b1773f731822cb",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/FileKitException.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/FileKitException.kt",
+      "bytes": 237,
+      "sha256": "e6f11396a3c391ebd0bc1a0ee92ad3296fd0934b8c91c6653e82e94b558726f9",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/FileKitException.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/InvalidMimeTypeException.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/InvalidMimeTypeException.kt",
+      "bytes": 165,
+      "sha256": "910fa3cbcc6406809abae3f17dedef7e6b12424e90ba5c8cea0381722a871ae1",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/InvalidMimeTypeException.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeType.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeType.kt",
+      "bytes": 3526,
+      "sha256": "7c1cb4add0ac1776ed454c5d7c44058b3f9c28613a425c8d8f35a29fcfac5b4f",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeType.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeTypeParameter.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeTypeParameter.kt",
+      "bytes": 129,
+      "sha256": "9d2c7586069f0ca40138786d4573d7a89ae359d81d7dcf8d586bc119e537e198",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeTypeParameter.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/utils/PathExt.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/utils/PathExt.kt",
+      "bytes": 443,
+      "sha256": "6651fbaf4df4c2649253c37aa8bbf624cd956e23cd1117ff0010ba0a200683d2",
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/utils/PathExt.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/jvmAndNativeMain/kotlin/io/github/vinceglb/filekit/PlatformFile.jvmAndNative.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/jvmAndNativeMain/kotlin/io/github/vinceglb/filekit/PlatformFile.jvmAndNative.kt",
+      "bytes": 5125,
+      "sha256": "a4dd9bd4bd6883a31e62c5dd9528c1878a0bd9e413516315d309434e2b8ded12",
+      "rawPath": "vendor/upstream/filekit-core/src/jvmAndNativeMain/kotlin/io/github/vinceglb/filekit/PlatformFile.jvmAndNative.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/BookmarkData.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/BookmarkData.kt",
+      "bytes": 916,
+      "sha256": "6465dbbcc658dde9d06f581e0dbb5a7036e59ca23ba135ef407b6951d3620c8e",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/BookmarkData.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/FileKit.nonWeb.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/FileKit.nonWeb.kt",
+      "bytes": 4360,
+      "sha256": "a9c8159d6d6815a68e89218967becaea5ad8d212ac43bc7de69d5221b06eb847",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/FileKit.nonWeb.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/MacOsBookmarkEnvelope.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/MacOsBookmarkEnvelope.kt",
+      "bytes": 2738,
+      "sha256": "2a2ad91211d013667236c2217f34cc70434e7d4f4038b867d17eee15c2a30a86",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/MacOsBookmarkEnvelope.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFile.nonWeb.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFile.nonWeb.kt",
+      "bytes": 9678,
+      "sha256": "a2253fd43705b7b4176447f6ddad242d961564ceb9e34dbe7e218178ab81de0f",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFile.nonWeb.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.nonWeb.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.nonWeb.kt",
+      "bytes": 891,
+      "sha256": "ebf7b480b4e2771c1f62c370c8a7e631f14281a386ae9dabe84aeec346a3fedc",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.nonWeb.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/exceptions/BookmarkResolutionException.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/exceptions/BookmarkResolutionException.kt",
+      "bytes": 772,
+      "sha256": "385f492bef61b588491f8de15c9339bd31a76b3840c70279037b9181e1065759",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/exceptions/BookmarkResolutionException.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/CoroutinesUtils.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/CoroutinesUtils.kt",
+      "bytes": 334,
+      "sha256": "6cc13745c22ca1b8bf7886421788a8350849e41ff8132a837a63659ab3765f87",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/CoroutinesUtils.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/ResizeUtils.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/ResizeUtils.kt",
+      "bytes": 1141,
+      "sha256": "ead4ed76b92354613a29e71e58b656dc4e73fbbf8e9548f4dee04828896ebe50",
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/ResizeUtils.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.kt",
+      "bytes": 3090,
+      "sha256": "10376c7cb91f5cd437d84bfccf2a336544d5f6955dd46bab95b426948c4c8bae",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogException.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogException.kt",
+      "bytes": 430,
+      "sha256": "76274c376034207f5a11f35cb508c0e355ca9233a5182e7d29deaf7d5100eda8",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogException.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogSettings.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogSettings.kt",
+      "bytes": 310,
+      "sha256": "7f20a76cf7cdc3b9b232be9728a5522f0397914088a0b8646f0e252bd11a9c15",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogSettings.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogsInternalApi.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogsInternalApi.kt",
+      "bytes": 455,
+      "sha256": "b168162d1db26c87ad45a0f7cf4022e4d3fbc64ae224950147f480ffada5408d",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogsInternalApi.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitMode.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitMode.kt",
+      "bytes": 8234,
+      "sha256": "b6806d7dc90fef53f9913ce78c9858e852570b9313dcf5765f63108818fca4e4",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitMode.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerException.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerException.kt",
+      "bytes": 1502,
+      "sha256": "4f86c20f167689f9289bb302ee548e3d8754d164ed6eb836d2190d70537bb6d7",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerException.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerState.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerState.kt",
+      "bytes": 1360,
+      "sha256": "1854f64f7a0f153bcdbe9495d0c7c9fa683d56787340f3b3b6ce2a6d9fec8eb1",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerState.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitType.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitType.kt",
+      "bytes": 1376,
+      "sha256": "e817bfcec090ad8ee38ef3b2906c1a1b758f494973e7249d2a918cf8ee7aa778",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitType.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileSaverName.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileSaverName.kt",
+      "bytes": 1160,
+      "sha256": "de453ce88a7e55fcd9e9a76a495a6d1767c04321571628d5a52f39903f9777b7",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileSaverName.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/Utils.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/Utils.kt",
+      "bytes": 925,
+      "sha256": "a140d66c314505fc5f1d6a2c3fb3e63368c5588278bb5c742e114609fd4041d4",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/Utils.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.mobile.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.mobile.kt",
+      "bytes": 1620,
+      "sha256": "3be219d1748b4a7f9ef72e9a7b31406967f63d38d8910114a0000f1e279d77c7",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.mobile.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitCameraType.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitCameraType.kt",
+      "bytes": 114,
+      "sha256": "d1747ed37e207b52878af884913f3405292cd0ccb55b90ba1ad7f5634adfa67f",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitCameraType.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenCameraSettings.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenCameraSettings.kt",
+      "bytes": 330,
+      "sha256": "e94c06e603eb6c0547e95bc579fbe430cbef9efe696b11d2dab8ec8124100a8e",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenCameraSettings.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitShareSettings.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitShareSettings.kt",
+      "bytes": 310,
+      "sha256": "b2e640c2f49dc2ddfba4a977229d829c867e28de30e7dea635dfd68f34f1d0b8",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitShareSettings.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.nonWeb.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.nonWeb.kt",
+      "bytes": 3427,
+      "sha256": "f27447fc50e3b69a67e97097d88643613ef447784e8f8f084d320c1f788006c1",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.nonWeb.kt"
+    },
+    {
+      "sourceKind": "upstream",
+      "sourceCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/upstream-e8876bcefec8e502ac61a0af45f00de02c253fbf.tar.gz",
+      "archiveSha256": "6d79dc279192a429e8a9e70ab65f29d0b67fd1515b43e4afdc74a83d853dbc01",
+      "memberPath": "filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenFileSettings.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/upstream/filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenFileSettings.kt",
+      "bytes": 337,
+      "sha256": "6734cf3052dc2e11aefccc4fa9272844784876b166f81b8939270d495ab235c7",
+      "rawPath": "vendor/upstream/filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenFileSettings.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "LICENSE",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/LICENSE",
+      "bytes": 1075,
+      "sha256": "a41675c6f02403d7845edd2488c5eafbe1dc5f20daac608e09f71c42fe9ff22b",
+      "rawPath": "vendor/community/LICENSE"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/FileKit.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/FileKit.ohos.kt",
+      "bytes": 2651,
+      "sha256": "c42f3a06c5deb47a6b7cc040311e0ca867caba59d469d6f185651645f4b62fb5",
+      "rawPath": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/FileKit.ohos.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/ImageCompression.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/ImageCompression.ohos.kt",
+      "bytes": 6050,
+      "sha256": "af0d6ea3b3a41f513154e26f88764b6da66756fb2ff602e2a00f19c5f7dfed9e",
+      "rawPath": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/ImageCompression.ohos.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/OhosDescriptor.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/OhosDescriptor.kt",
+      "bytes": 3704,
+      "sha256": "41d199ba41fd87dbae9c1576c2aa052bff43b088d2679f750298fb5eb6aed27a",
+      "rawPath": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/OhosDescriptor.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFile.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFile.ohos.kt",
+      "bytes": 5008,
+      "sha256": "7c58af78da3a799b79043cc1cb599b244c6fde330706e9cb51769b6066125064",
+      "rawPath": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFile.ohos.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt",
+      "bytes": 3042,
+      "sha256": "b6e6389cb27a9a250a62717cc927e7b6de9859fc9a537399bb4665a73445bf13",
+      "rawPath": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-dialogs/src/ohosArm64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-dialogs/src/ohosArm64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "bytes": 296,
+      "sha256": "f8715b9405f85400058a6842090253ba4976aa19f02eea8929fc0d01ab191573",
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosArm64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt",
+      "bytes": 4913,
+      "sha256": "4833b60bc2b4e1622d6297a1177c7efa45dc0aa862e8f0e4638eedc498b355e5",
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosNapi.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosNapi.kt",
+      "bytes": 6482,
+      "sha256": "09366e36828a59ac56b22af886db82d8d006b0fb62baac980e5e6b6f38280db9",
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosNapi.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt",
+      "bytes": 11577,
+      "sha256": "29c1ee4ad529d8c1df52d93a7fab43529c3b0669a1342a562790425f591a3984",
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt"
+    },
+    {
+      "sourceKind": "community",
+      "sourceCommit": "f44915a297d555a614b965f2245c09ade5183c8a",
+      "archivePath": "harmony-build/.local/p4-filekit-discovery-20261022/source-archives/community-f44915a297d555a614b965f2245c09ade5183c8a.tar.gz",
+      "archiveSha256": "d4f9f0c4f89cef9f906779428575bef0dcbfa7bc7f6b802ea90b1d5b1b3b7056",
+      "memberPath": "filekit-dialogs/src/ohosX64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "snapshotPath": "harmony-build/.local/p4-filekit-discovery-20261022/source-subset-facts/community/filekit-dialogs/src/ohosX64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "bytes": 296,
+      "sha256": "f8715b9405f85400058a6842090253ba4976aa19f02eea8929fc0d01ab191573",
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosX64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt"
+    }
+  ],
+  "unmodifiedMappings": [
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/FileKit.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/FileKit.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/ImageFormat.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/ImageFormat.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFile.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/PlatformFile.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/PlatformFileSerializer.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/FileKitException.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/exceptions/FileKitException.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/exceptions/InvalidMimeTypeException.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/exceptions/InvalidMimeTypeException.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeType.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/mimeType/MimeType.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/mimeType/MimeTypeParameter.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/mimeType/MimeTypeParameter.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/commonMain/kotlin/io/github/vinceglb/filekit/utils/PathExt.kt",
+      "compiledPath": "filekit-core/commonMain/io/github/vinceglb/filekit/utils/PathExt.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/BookmarkData.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/BookmarkData.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/FileKit.nonWeb.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/FileKit.nonWeb.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/MacOsBookmarkEnvelope.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/MacOsBookmarkEnvelope.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFile.nonWeb.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/PlatformFile.nonWeb.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/PlatformFileSerializer.nonWeb.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/PlatformFileSerializer.nonWeb.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/exceptions/BookmarkResolutionException.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/exceptions/BookmarkResolutionException.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/CoroutinesUtils.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/utils/CoroutinesUtils.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-core/src/nonWebMain/kotlin/io/github/vinceglb/filekit/utils/ResizeUtils.kt",
+      "compiledPath": "filekit-core/nonWebMain/io/github/vinceglb/filekit/utils/ResizeUtils.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKit.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogException.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitDialogException.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogSettings.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitDialogSettings.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogsInternalApi.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitDialogsInternalApi.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitMode.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitMode.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerException.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitPickerException.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitPickerState.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitPickerState.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitType.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileKitType.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/FileSaverName.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/FileSaverName.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/commonMain/kotlin/io/github/vinceglb/filekit/dialogs/Utils.kt",
+      "compiledPath": "filekit-dialogs/commonMain/io/github/vinceglb/filekit/dialogs/Utils.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.mobile.kt",
+      "compiledPath": "filekit-dialogs/mobileMain/io/github/vinceglb/filekit/dialogs/FileKit.mobile.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitCameraType.kt",
+      "compiledPath": "filekit-dialogs/mobileMain/io/github/vinceglb/filekit/dialogs/FileKitCameraType.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenCameraSettings.kt",
+      "compiledPath": "filekit-dialogs/mobileMain/io/github/vinceglb/filekit/dialogs/FileKitOpenCameraSettings.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/mobileMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitShareSettings.kt",
+      "compiledPath": "filekit-dialogs/mobileMain/io/github/vinceglb/filekit/dialogs/FileKitShareSettings.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKit.nonWeb.kt",
+      "compiledPath": "filekit-dialogs/nonWebMain/io/github/vinceglb/filekit/dialogs/FileKit.nonWeb.kt"
+    },
+    {
+      "rawPath": "vendor/upstream/filekit-dialogs/src/nonWebMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitOpenFileSettings.kt",
+      "compiledPath": "filekit-dialogs/nonWebMain/io/github/vinceglb/filekit/dialogs/FileKitOpenFileSettings.kt"
+    },
+    {
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosArm64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "compiledPath": "filekit-dialogs/ohosArm64Main/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt"
+    },
+    {
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosX64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "compiledPath": "filekit-dialogs/ohosX64Main/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt"
+    }
+  ],
+  "selection": {
+    "officialApi": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+    "communityOhosReference": "f44915a297d555a614b965f2245c09ade5183c8a",
+    "archiveRecordDownloadTimeFieldsPreserved": true,
+    "compiledInputTruth": "unmodifiedMappings and source-patch.json overlays"
+  }
+}

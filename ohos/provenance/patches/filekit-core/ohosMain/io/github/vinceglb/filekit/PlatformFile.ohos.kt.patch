@@ -1,0 +1,50 @@
+--- a/vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFile.ohos.kt
++++ b/overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/PlatformFile.ohos.kt
+@@ -14 +14 @@
+-/** A filesystem path or an explicitly imported system picker descriptor. */
++/** 文件系统路径或由系统选择器显式导入的描述符。 */
+@@ -26 +26 @@
+-    /** Releases an imported picker descriptor. Existing streams remain valid. Local paths are unaffected. */
++    /** 释放导入的 owner 描述符；已打开的流继续有效，普通路径无需释放。 */
+@@ -27,0 +28,5 @@
++
++    /** 获取独立所有权；关闭原对象不影响此借用或其已打开的流。 */
++    public fun acquireLease(): PlatformFile = descriptor?.acquire()?.let { owned ->
++        try { PlatformFile(ioPath, Unit, owned) } catch (error: Throwable) { owned.close(); throw error }
++    } ?: this
+@@ -33 +38 @@
+-        /** Duplicates fd; the caller retains ownership of the original. Close this file after use. */
++        /** 复制 fd；原描述符仍归调用者所有，使用后关闭此文件对象。 */
+@@ -38 +43,3 @@
+-            return PlatformFile(Path("/proc/self/fd/$duplicate"), Unit, OhosDescriptor(duplicate, uri, name))
++            val owned = OhosDescriptor(duplicate, uri, name)
++            return try { PlatformFile(Path("/proc/self/fd/$duplicate"), Unit, owned) }
++            catch (error: Throwable) { owned.close(); throw error }
+@@ -51 +58 @@
+-// Unlike realpath/resolve, this also works for a destination that does not yet exist.
++// 不要求目标已存在，尚未创建的目标也可以计算绝对路径。
+@@ -67 +74 @@
+-// POSIX stat exposes change time, not creation time. Do not misreport ctime as birth time.
++// POSIX stat 的 ctime 是状态变更时间，不能当成创建时间。
+@@ -72 +79 @@
+-    if ((descriptor?.let { fstat(it.fd, info.ptr) } ?: stat(path, info.ptr)) != 0) {
++    if ((descriptor?.borrowed { fstat(it, info.ptr) } ?: stat(path, info.ptr)) != 0) {
+@@ -114,0 +122,18 @@
++
++@PublishedApi
++internal fun PlatformFile.withPath(path: Path): PlatformFile = PlatformFile(path)
++
++public actual fun PlatformFile.Companion.resolveBookmarkData(bookmarkData: BookmarkData): BookmarkResolution =
++    BookmarkResolution(fromBookmarkData(bookmarkData), isStale = false, shouldRefresh = false)
++
++internal actual fun PlatformFile.deleteIfSymbolicLink(): Boolean = memScoped {
++    val filePath = toKotlinxIoPath().toString()
++    val info = alloc<stat>()
++    if (lstat(filePath, info.ptr) != 0) {
++        if (errno == ENOENT || errno == ENOTDIR) return@memScoped false
++        throw kotlinx.io.IOException("Cannot inspect symbolic link: ${strerror(errno)?.toKString()}")
++    }
++    if ((info.st_mode.toInt() and S_IFMT) != S_IFLNK) return@memScoped false
++    if (unlink(filePath) != 0) throw kotlinx.io.IOException("Cannot unlink symbolic link: ${strerror(errno)?.toKString()}")
++    true
++}

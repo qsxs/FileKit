@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "id": "P4_FILEKIT_OFFICIAL016_OHOS_OVERLAY_R2",
+  "officialPublicCommonSource": "UNMODIFIED",
+  "metadataWaiver": "NONE_STANDARD_KGP_FIRST",
+  "patchFormat": "Unified diff with zero context; review artifact only, recipe copies full overlay and never executes patches.",
+  "decisions": [
+    "P4-D003",
+    "P4-D004",
+    "P4-D005",
+    "P4-D006",
+    "P4-D007",
+    "P4-D010",
+    "P4-D018"
+  ],
+  "overlays": [
+    {
+      "path": "overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/FileKit.ohos.kt",
+      "sha256": "e7862dbf3b9df8b9d242d0b89c13e848f4c2a83337b64707a33ac9fe9641641b",
+      "bytes": 2154,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/FileKit.ohos.kt",
+          "sha256": "c42f3a06c5deb47a6b7cc040311e0ca867caba59d469d6f185651645f4b62fb5",
+          "sourcePath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/FileKit.ohos.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "保留原生 ApplicationContext 目录；迁移 0.16 gallery Result 签名，未消费的相册写入显式 unsupported。",
+      "patch": {
+        "path": "patches/filekit-core/ohosMain/io/github/vinceglb/filekit/FileKit.ohos.kt.patch",
+        "sha256": "967018accf97c7426ea647aebbf314eb0a2482a7c86ca331f7a53df8480b6625"
+      }
+    },
+    {
+      "path": "overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/ImageCompression.ohos.kt",
+      "sha256": "9a67519a86e0a83c8c5686ae9fb6b55ec7dc14672610c167cfd40295cf2596dd",
+      "bytes": 9458,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/ImageCompression.ohos.kt",
+          "sha256": "af0d6ea3b3a41f513154e26f88764b6da66756fb2ff602e2a00f19c5f7dfed9e",
+          "sourcePath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/ImageCompression.ohos.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "真实解码/纠正后尺寸/1-8旋转镜像/重编码；D005方向不可用默认仅限Orientation getter；所有 Native 对象、getter malloc 和临时 FD finally 配平。",
+      "patch": {
+        "path": "patches/filekit-core/ohosMain/io/github/vinceglb/filekit/ImageCompression.ohos.kt.patch",
+        "sha256": "296b9c9f731a692dd4d9d72b6d296aa2cf4c56e416aff76716abc36ae44dce9b"
+      }
+    },
+    {
+      "path": "overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/OhosDescriptor.kt",
+      "sha256": "44c8b16e5b89fcbf8a0a3b619d0c9ef1cf1c517dfa01e6184f93bc492555e51e",
+      "bytes": 5040,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/OhosDescriptor.kt",
+          "sha256": "41d199ba41fd87dbae9c1576c2aa052bff43b088d2679f750298fb5eb6aed27a",
+          "sourcePath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/OhosDescriptor.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "owner 检查/dup/close 共同短 mutex；流各自 FD 和独立 offset；stat 借用，流与 cleaner 不并发释放在用句柄。P4-R1-002：导入FD append在dup/truncate前明确unsupported，普通路径系统append保留，不静默覆盖尾部。",
+      "patch": {
+        "path": "patches/filekit-core/ohosMain/io/github/vinceglb/filekit/OhosDescriptor.kt.patch",
+        "sha256": "26724187ab676f09d3d5dfd3ff95b15484c2a27dee6be887fae220fb227ffd05"
+      }
+    },
+    {
+      "path": "overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/PlatformFile.ohos.kt",
+      "sha256": "694e5fc380bc179faa9dcecff78b46a42ec678feea0987f4dc1b3f8f9dc52038",
+      "bytes": 6272,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFile.ohos.kt",
+          "sha256": "7c58af78da3a799b79043cc1cb599b244c6fde330706e9cb51769b6066125064",
+          "sourcePath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFile.ohos.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "导入 owner/lease 生命周期与路径语义分离；补 0.16 bookmark resolve、链接不跟随删除，stat 借用。",
+      "patch": {
+        "path": "patches/filekit-core/ohosMain/io/github/vinceglb/filekit/PlatformFile.ohos.kt.patch",
+        "sha256": "7138736148e491a7de5d20925d79b8f7ca4ae2a2229f6690a1113452c83db5ac"
+      }
+    },
+    {
+      "path": "overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt",
+      "sha256": "cd021bf93a0da48bf21f7365f0e19fd83476a65d77ede1713ae72ace214c6a07",
+      "bytes": 5955,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt",
+          "sha256": "b6e6389cb27a9a250a62717cc927e7b6de9859fc9a537399bb4665a73445bf13",
+          "sourcePath": "filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        },
+        {
+          "path": "vendor/upstream/filekit-core/src/jvmAndNativeMain/kotlin/io/github/vinceglb/filekit/PlatformFile.jvmAndNative.kt",
+          "sha256": "a4dd9bd4bd6883a31e62c5dd9528c1878a0bd9e413516315d309434e2b8ded12",
+          "sourcePath": "filekit-core/src/jvmAndNativeMain/kotlin/io/github/vinceglb/filekit/PlatformFile.jvmAndNative.kt",
+          "commit": "e8876bcefec8e502ac61a0af45f00de02c253fbf"
+        }
+      ],
+      "reason": "基于官方 0.16 JVM/Native IO 保留路径分支、递归删除、目录目标与 scoped 包装，在 OHOS 叶层加入社区 FD 分支。",
+      "patch": {
+        "path": "patches/filekit-core/ohosMain/io/github/vinceglb/filekit/PlatformFileIO.ohos.kt.patch",
+        "sha256": "f831148adb2bb1c330a1a8448751f87a928ccd9db4ff52b657e23daa2aaf90a6"
+      }
+    },
+    {
+      "path": "overlay/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt",
+      "sha256": "c8796bf02a22dbb2edef8b7a7d0817fdf623a40ffb7b4772cdda458db651670d",
+      "bytes": 8050,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt",
+          "sha256": "4833b60bc2b4e1622d6297a1177c7efa45dc0aa862e8f0e4638eedc498b355e5",
+          "sourcePath": "filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "移除旧 title；迁移 defaultExtension/allowedExtensions/platform saver 与 Failed 异常模型；未消费能力显式 unsupported。P4-R1-001：Completed进入直接collector后移交owner，first/take正常短路不关闭已移交FD；只清理真正未移交列表。 D010：suspend工厂返回冷Flow前捕获具体owner（含无owner），collect只调用捕获闭包；R1下游移交与未移交清理不变。",
+      "patch": {
+        "path": "patches/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/FileKitDialogs.ohos.kt.patch",
+        "sha256": "d8fa509ada1d56b255934c869deff51f7af55b52c4e90f20d86721286a98f139"
+      }
+    },
+    {
+      "path": "overlay/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/OhosNapi.kt",
+      "sha256": "f1835a2752166a00a024839a0c2326922fb791c449e650d0e12db2d5c4f04e5c",
+      "bytes": 6479,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosNapi.kt",
+          "sha256": "09366e36828a59ac56b22af886db82d8d006b0fb62baac980e5e6b6f38280db9",
+          "sourcePath": "filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosNapi.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "保留真实 NAPI 与 JS finalizer StableRef 所有权；平台数据错误保留 FileKitException。",
+      "patch": {
+        "path": "patches/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/OhosNapi.kt.patch",
+        "sha256": "cd898fb8182e350b788b223dfb16d06844bd89d668cca198a0282e8b35364c9c"
+      }
+    },
+    {
+      "path": "overlay/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt",
+      "sha256": "c718e17f7861a59b9ffd9167cd8ef31178a68da09fb86985d69d0c39deeda3da",
+      "bytes": 14784,
+      "basedOn": [
+        {
+          "path": "vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt",
+          "sha256": "29c1ee4ad529d8c1df52d93a7fab43529c3b0669a1342a562790425f591a3984",
+          "sourcePath": "filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt",
+          "commit": "f44915a297d555a614b965f2245c09ade5183c8a"
+        }
+      ],
+      "reason": "D006 owner session、Main 调度、Prompt取消未交付关闭、晚回调清空闭包；保留真实系统调用和原 URI 分享，dismiss 只清理本方监听。 D010：Main内固定owner或捕获失败，collect延后原错误包装；立即suspend调用在Main解析一次owner，复用原undelivered finally，不回退latest。 D018：OHOS统一三参init，session持独立context/factory强引用并配平失败和dispose；Share仅经普通factory两方法取得SDK实例，原addRecord/Promise/dismiss语义保持。",
+      "patch": {
+        "path": "patches/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt.patch",
+        "sha256": "a42767a355ed30e99913bcf168fc60aede69e38461dcf689873e5407d58d0a14"
+      }
+    }
+  ],
+  "unmodifiedAbiHandlers": [
+    {
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosArm64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "compiledPath": "filekit-dialogs/ohosArm64Main/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt"
+    },
+    {
+      "rawPath": "vendor/community/filekit-dialogs/src/ohosX64Main/kotlin/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt",
+      "compiledPath": "filekit-dialogs/ohosX64Main/io/github/vinceglb/filekit/dialogs/MainHandler.ohos.kt"
+    }
+  ],
+  "scope": "No app/shared/host/rootcatalog/other producer change; no consumer or runtime pass",
+  "reviewFixRevision": "REVIEW_R1_TARGETED_FIX",
+  "reviewFixes": [
+    "P4-R1-001",
+    "P4-R1-002"
+  ]
+}

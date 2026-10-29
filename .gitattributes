@@ -1,0 +1,13 @@
+/filekit-core/src/ohosMain/**/*.kt text eol=lf
+/filekit-core/src/ohosMain/**/*.ets text eol=lf
+/filekit-dialogs/src/ohosMain/**/*.kt text eol=lf
+/filekit-dialogs/src/ohosMain/**/*.ets text eol=lf
+/filekit-dialogs/src/ohosX64Main/**/*.kt text eol=lf
+/filekit-dialogs/src/ohosX64Main/**/*.ets text eol=lf
+/filekit-dialogs/src/ohosArm64Main/**/*.kt text eol=lf
+/filekit-dialogs/src/ohosArm64Main/**/*.ets text eol=lf
+/ohos/** text eol=lf
+/ohos/provenance/vendor/community/** -text !eol
+/ohos/provenance/patches/** -text !eol
+/ohos/provenance/source-inputs.json -text !eol
+/ohos/provenance/source-patch.json -text !eol

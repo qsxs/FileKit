@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "group": "io.github.qsxs.cpf.filekit",
+  "upstreamCommit": "e8876bcefec8e502ac61a0af45f00de02c253fbf",
+  "originalPortCommit": "f9a23a22ab1839754802535ea172c2c0891f1eb1",
+  "kotlin": "2.4.20-0.1.0-08",
+  "gradle": "8.11.1",
+  "gradleDistributionSha256": "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6",
+  "modules": [
+    "filekit-core",
+    "filekit-dialogs"
+  ],
+  "metadataPolicy": "STANDARD_KGP_FIRST_NO_WAIVER",
+  "toolingCommit": "d0cff88fd1ea2e4f08bb4409f1c802cca0c7f285"
+}

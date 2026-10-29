@@ -1,0 +1,28 @@
+--- a/vendor/community/filekit-core/src/ohosMain/kotlin/io/github/vinceglb/filekit/FileKit.ohos.kt
++++ b/overlay/filekit-core/ohosMain/io/github/vinceglb/filekit/FileKit.ohos.kt
+@@ -9,8 +9 @@
+-public actual object FileKit {
+-    /**
+-     * Application integration for PhotoAccessHelper. The callback must finish only after the
+-     * photo has been saved, and propagate cancellation/permission errors to the caller.
+-     * Dispatch to the ArkTS/UI thread in the callback when required by the host bridge.
+-     */
+-    public var saveImageToGalleryHandler: (suspend (bytes: ByteArray, filename: String) -> Unit)? = null
+-}
++public actual object FileKit
+@@ -33 +26 @@
+-// An installed mobile app has no source project directory, as on Android/iOS.
++// 移动应用安装后没有源项目目录，与 Android/iOS 一致。
+@@ -53,7 +46,5 @@
+-public actual suspend fun FileKit.saveImageToGallery(bytes: ByteArray, filename: String) {
+-    require(bytes.isNotEmpty()) { "Image bytes must not be empty" }
+-    require(filename.isNotBlank() && '/' !in filename && '\u0000' !in filename) { "Invalid image filename" }
+-    val handler = saveImageToGalleryHandler
+-        ?: throw FileKitException("Set FileKit.saveImageToGalleryHandler using the application's PhotoAccessHelper bridge before saving to the gallery")
+-    handler(bytes, filename)
+-}
++public actual suspend fun FileKit.saveImageToGallery(bytes: ByteArray, filename: String): Result<Unit> =
++    Result.failure(FileKitException("Saving images to the gallery is not supported on OHOS"))
++
++public actual suspend fun FileKit.saveVideoToGallery(file: PlatformFile, filename: String): Result<Unit> =
++    Result.failure(FileKitException("Saving videos to the gallery is not supported on OHOS"))

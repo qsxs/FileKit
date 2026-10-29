@@ -1,0 +1,352 @@
+--- a/vendor/community/filekit-dialogs/src/ohosMain/kotlin/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt
++++ b/overlay/filekit-dialogs/ohosMain/io/github/vinceglb/filekit/dialogs/OhosSystemDialogs.kt
+@@ -11 +10,0 @@
+-import platform.posix.*
+@@ -15,2 +14,2 @@
+-/** Initialize on the ArkTS UI thread with the owning UIAbilityContext, before opening dialogs. */
+-public fun FileKit.init(env: napi_env, context: napi_value) {
++/** 在所属 UIAbility 的 ArkTS UI 线程初始化；重新初始化会结束旧宿主的未交付请求。 */
++public fun FileKit.init(env: napi_env, context: napi_value, shareFactory: napi_value): FileKitDialogSession {
+@@ -18,5 +17,11 @@
+-    OhosSystemDialogs.init(env, context)
+-}
+-
+-/** Call from the owning UIAbility's destruction callback, on the same ArkTS thread. */
+-public fun FileKit.dispose(): Unit = OhosSystemDialogs.dispose()
++    return OhosSystemDialogs.init(env, context, shareFactory)
++}
++
++/** 每个 UIAbility 保存自己 init 返回的 session，在同一 ArkTS UI 线程销毁。 */
++public class FileKitDialogSession internal constructor(private var onDispose: (() -> Unit)?) {
++    public fun dispose() {
++        val cleanup = onDispose ?: return
++        onDispose = null
++        cleanup()
++    }
++}
+@@ -26,9 +31,29 @@
+-
+-    fun init(env: napi_env, context: napi_value) {
+-        implementation?.dispose()
+-        implementation = Implementation(env, context)
+-    }
+-
+-    fun dispose() {
+-        implementation?.dispose()
+-        implementation = null
++    private var currentSession: FileKitDialogSession? = null
++
++    fun init(env: napi_env, context: napi_value, shareFactory: napi_value): FileKitDialogSession {
++        currentSession?.dispose()
++        val owner = Implementation(env, context, shareFactory)
++        val session = FileKitDialogSession {
++            // 按实际对象身份撤销；旧 Ability 的晚到销毁不能影响新宿主。
++            if (implementation === owner) {
++                implementation = null
++                currentSession = null
++            }
++            owner.dispose()
++        }
++        implementation = owner
++        currentSession = session
++        return session
++    }
++
++    suspend fun captureOwnerCall(): suspend (JsonObject) -> List<PlatformFile>? {
++        // 工厂返回冷 Flow 前在 Main 固定 owner；null 也固定，之后不能改查新宿主。
++        val captured: Result<Implementation?> = try {
++            Result.success(withContext(Dispatchers.Main) { implementation })
++        } catch (cancelled: CancellationException) {
++            throw cancelled
++        } catch (error: Throwable) {
++            // 捕获失败仍在 collect 经既有错误契约交付，不在工厂提前抛普通错误。
++            Result.failure(error)
++        }
++        return { request -> callOnMain(request) { captured.getOrThrow() } }
+@@ -38,4 +63,69 @@
+-        (implementation ?: throw FileKitException("Call FileKit.init(env, context) first")).call(request)
+-}
+-
+-private class Implementation(env: napi_env, context: napi_value) {
++        callOnMain(request) { implementation }
++
++    private suspend fun callOnMain(
++        request: JsonObject,
++        owner: () -> Implementation?,
++    ): List<PlatformFile>? {
++        var undelivered: List<PlatformFile>? = null
++        try {
++            val result = withContext(Dispatchers.Main) {
++                (owner() ?: throw FileKitException("Call FileKit.init(env, context, shareFactory) first"))
++                    .call(request).also { undelivered = it }
++            }
++            undelivered = null
++            return result
++        } finally {
++            // Main 已取得结果但返回原 dispatcher 时取消，也必须归还未交付 owner。
++            undelivered?.forEach { it.close() }
++        }
++    }
++}
++
++// Promise 的 JS 函数持有 Pending，完成或 dispose 后清空其重资源闭包。
++// StableRef 只由 JS finalizer 释放，晚回调不访问旧 context、不打开新的 FD。
++private class Pending(
++    private var continuation: CancellableContinuation<List<PlatformFile>?>?,
++    private var decode: ((napi_value) -> List<PlatformFile>?)?,
++    private var finished: (() -> Unit)?,
++) {
++    private var settled = false
++    var failed: (() -> Unit)? = null
++
++    fun abandon() {
++        val previous = continuation
++        continuation = null
++        decode = null
++        finished = null
++        failed = null
++        previous?.cancel()
++    }
++
++    fun complete(value: napi_value?, error: Throwable?) {
++        if (settled) return
++        settled = true
++        val target = continuation
++        val decoder = decode
++        val onFinished = finished
++        val onFailure = failed
++        continuation = null
++        decode = null
++        finished = null
++        failed = null
++        var files: List<PlatformFile>? = null
++        try {
++            onFinished?.invoke()
++            if (error != null) throw error
++            if (target?.isActive == true && decoder != null) {
++                files = decoder(requireNotNull(value))
++                target.resume(files) { _, abandoned, _ -> abandoned?.forEach { it.close() } }
++                files = null
++            }
++        } catch (failure: Throwable) {
++            files?.forEach { it.close() }
++            try { onFailure?.invoke() } catch (cleanup: Throwable) { failure.addSuppressed(cleanup) }
++            if (target?.isActive == true) target.resumeWith(Result.failure(failure))
++        }
++    }
++}
++
++private class Implementation(env: napi_env, context: napi_value, shareFactory: napi_value) {
+@@ -43,0 +134,7 @@
++    private val factoryRef = try {
++        js.reference(shareFactory)
++    } catch (error: Throwable) {
++        try { js.check(napi_delete_reference(env, contextRef)) }
++        catch (cleanup: Throwable) { error.addSuppressed(cleanup) }
++        throw error
++    }
+@@ -45 +142,2 @@
+-    private var active: CancellableContinuation<List<PlatformFile>?>? = null
++    private var active: Pending? = null
++    private val shares = mutableSetOf<SharePanel>()
+@@ -50,3 +148,18 @@
+-        active?.cancel()
+-        active = null
+-        napi_delete_reference(js.env, contextRef)
++        var failure: Throwable? = null
++        try {
++            try { active?.abandon() }
++            catch (error: Throwable) { failure = error }
++            finally { active = null }
++            shares.toList().forEach { panel ->
++                try { panel.close() } catch (error: Throwable) {
++                    if (failure == null) failure = error else failure?.addSuppressed(error)
++                }
++            }
++        } finally {
++            shares.clear()
++            try { js.check(napi_delete_reference(js.env, factoryRef)) }
++            catch (error: Throwable) { if (failure == null) failure = error else failure?.addSuppressed(error) }
++            try { js.check(napi_delete_reference(js.env, contextRef)) }
++            catch (error: Throwable) { if (failure == null) failure = error else failure?.addSuppressed(error) }
++        }
++        failure?.let { throw it }
+@@ -62,24 +175,5 @@
+-        active = continuation
+-        var settled = false
+-        var cleanup: (() -> Unit)? = null
+-        fun finish(value: napi_value?, failure: Throwable?) {
+-            if (settled) return
+-            settled = true
+-            if (active === continuation) active = null
+-            var files: List<PlatformFile>? = null
+-            try {
+-                if (failure != null) throw failure
+-                if (!disposed && continuation.isActive) {
+-                    files = js.scoped { decode(request, requireNotNull(value)) }
+-                    // Keep successful camera output; cancelled requests still remove newly created output.
+-                    if (files != null) cleanup = null
+-                    continuation.resume(files) { _, abandoned, _ -> abandoned?.forEach { it.close() } }
+-                }
+-            } catch (error: Throwable) {
+-                files?.forEach { it.close() }
+-                if (continuation.isActive) continuation.resumeWith(Result.failure(error))
+-            } finally {
+-                cleanup?.invoke()
+-                cleanup = null
+-            }
+-        }
++        lateinit var pending: Pending
++        pending = Pending(continuation, { result -> js.scoped { decode(request, result) } }, {
++            if (active === pending) active = null
++        })
++        active = pending
+@@ -88,5 +182,5 @@
+-                val promise = start(request) { cleanup = it }
+-                val success = js.callback { finish(it, null) }
+-                val failure = js.callback { value ->
+-                    finish(null, FileKitException(js.describeError(value)))
+-                }
++                val promise = start(request, pending)
++                val success = js.callback { pending.complete(it, null) }
++                // 回调只捕获轻量 NAPI 环境与 Pending；dispose 后 Pending 不再持有 Implementation。
++                val napi = js
++                val failure = js.callback { value -> pending.complete(null, FileKitException(napi.describeError(value))) }
+@@ -96,7 +190,6 @@
+-            finish(null, error)
+-        }
+-        // Cancellation cannot dismiss system UI. Keep active until its Promise settles,
+-        // so a second picker cannot overlap the first and its eventual result is discarded.
+-    }
+-
+-    private fun start(request: JsonObject, onCleanup: (() -> Unit) -> Unit): napi_value {
++            pending.complete(null, error)
++        }
++        // 取消不能替代系统 UI 的完成；保留未结 Promise，完成时检查 continuation 再决定是否导入。
++    }
++
++    private fun start(request: JsonObject, pending: Pending): napi_value {
+@@ -105,3 +198,2 @@
+-        val operation = request.text("operation")
+-        return when (operation) {
+-            "pick", "directory", "save" -> {
++        return when (val operation = request.text("operation")) {
++            "pick", "save" -> {
+@@ -119 +211 @@
+-                        js.set(options, "newFileNames", js.array(listOf(js.text(request.text("name") ?: "file"))))
++                        js.set(options, "newFileNames", js.array(listOf(js.text(requireNotNull(request.text("name"))))))
+@@ -121,8 +213 @@
+-                        js.set(options, "maxSelectNumber", js.number(if (operation == "directory") 1 else request.count()))
+-                        if (operation == "directory") {
+-                            js.set(options, "selectMode", js.get(js.get(picker, "DocumentSelectMode"), "FOLDER"))
+-                        }
+-                        val extensions = request["extensions"]?.jsonArray.orEmpty()
+-                        if (extensions.isNotEmpty()) js.set(options, "fileSuffixFilters", js.array(
+-                            extensions.map { js.text(".${it.jsonPrimitive.content}") }
+-                        ))
++                        js.set(options, "maxSelectNumber", js.number(request.count()))
+@@ -129,0 +215,4 @@
++                    val extensions = request["extensions"]?.jsonArray.orEmpty()
++                    if (extensions.isNotEmpty()) js.set(options,
++                        if (operation == "save") "fileSuffixChoices" else "fileSuffixFilters",
++                        js.array(extensions.map { js.text(".${it.jsonPrimitive.content}") }))
+@@ -132,19 +220,0 @@
+-            }
+-            "camera" -> {
+-                val path = requireNotNull(request.text("path"))
+-                require("://" !in path) { "Camera destination must be a sandbox path" }
+-                val existed = access(path, F_OK) == 0
+-                val fs = js.module("@ohos.file.fs")
+-                val mode = js.get(fs, "OpenMode")
+-                val destination = js.call(fs, "openSync", js.text(path), js.number(
+-                    js.int(js.get(mode, "CREATE")) or js.int(js.get(mode, "READ_WRITE"))
+-                ))
+-                js.call(fs, "closeSync", destination)
+-                if (!existed) onCleanup { unlink(path); Unit }
+-                val picker = js.module("@ohos.multimedia.cameraPicker")
+-                val camera = js.module("@ohos.multimedia.camera")
+-                val front = request["front"]?.jsonPrimitive?.booleanOrNull == true
+-                js.set(options, "cameraPosition", js.get(js.get(camera, "CameraPosition"),
+-                    if (front) "CAMERA_POSITION_FRONT" else "CAMERA_POSITION_BACK"))
+-                js.set(options, "saveUri", uri(path))
+-                js.call(picker, "pick", context, js.array(listOf(js.get(js.get(picker, "PickerMediaType"), "PHOTO"))), options)
+@@ -163,2 +233 @@
+-                // Optional HarmonyOS capability: loaded only when sharing is requested.
+-                val share = js.module("@hms.collaboration.systemShare")
++                val factory = js.dereference(factoryRef)
+@@ -169 +238 @@
+-                val data = js.construct(share, "SharedData", record(paths.first()))
++                val data = js.call(factory, "createSharedData", record(paths.first()))
+@@ -171 +240,5 @@
+-                js.call(js.construct(share, "ShareController", data), "show", context, options)
++                lateinit var panel: SharePanel
++                panel = SharePanel(js, js.call(factory, "createShareController", data)) { shares.remove(panel) }
++                shares.add(panel)
++                pending.failed = { panel.close() }
++                panel.show(context, options)
+@@ -180,6 +252,0 @@
+-        if (operation == "camera") {
+-            val code = js.int(js.get(result, "resultCode"))
+-            if (code == -1) return null
+-            if (code != 0) throw FileKitException("Camera failed with result code $code")
+-            return listOf(PlatformFile(requireNotNull(request.text("path"))))
+-        }
+@@ -190,10 +257 @@
+-        require(uris.size <= maximum) { "Picker exceeded maxItems" }
+-        if (operation == "directory") {
+-            val path = js.string(js.get(js.construct(js.module("@ohos.file.fileuri"), "FileUri", js.text(uris.first())), "path"))
+-            val fs = js.module("@ohos.file.fs")
+-            require(js.bool(js.call(fs, "accessSync", js.text(path))) &&
+-                js.bool(js.call(js.call(fs, "statSync", js.text(path)), "isDirectory"))) {
+-                "Selected directory is not accessible as a filesystem path on this device"
+-            }
+-            return listOf(PlatformFile(path))
+-        }
++        if (uris.size > maximum) throw FileKitException("Picker exceeded maxItems")
+@@ -219 +277,3 @@
+-            val name = js.string(js.get(js.construct(js.module("@ohos.file.fileuri"), "FileUri", js.text(uri)), "name"))
++            // fs.File.name 为真实打开文件的元数据；媒体 URI 不通过 FileUri.path 转换。
++            val name = js.string(js.get(file, "name"))
++            if (name.isBlank()) throw FileKitException("The opened file has no display name")
+@@ -228,0 +289,41 @@
++private class SharePanel(
++    private val js: OhosNapi,
++    controller: napi_value,
++    private var onClose: (() -> Unit)?,
++) {
++    private var controllerRef: napi_ref? = js.reference(controller)
++    private var listenerRef: napi_ref? = null
++
++    fun show(context: napi_value, options: napi_value): napi_value {
++        val controller = js.dereference(requireNotNull(controllerRef))
++        try {
++            val listener = js.callback { close() }
++            listenerRef = js.reference(listener)
++            js.call(controller, "on", js.text("dismiss"), listener)
++            // show 仅表示本地提交；dismiss 也不代表接收方已经读取。
++            return js.call(controller, "show", context, options)
++        } catch (error: Throwable) {
++            close()
++            throw error
++        }
++    }
++
++    fun close() {
++        val controller = controllerRef ?: return
++        val listener = listenerRef
++        controllerRef = null
++        listenerRef = null
++        val callback = onClose
++        onClose = null
++        try {
++            if (listener != null) js.scoped {
++                js.call(js.dereference(controller), "off", js.text("dismiss"), js.dereference(listener))
++            }
++        } finally {
++            if (listener != null) napi_delete_reference(js.env, listener)
++            napi_delete_reference(js.env, controller)
++            callback?.invoke()
++        }
++    }
++}
++
