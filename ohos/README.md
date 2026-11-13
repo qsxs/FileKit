@@ -1,5 +1,7 @@
 # FileKit 0.16.0 OHOS 独立 producer
 
+当前 `ShareManager` 版本使用 [dialogs 发布入口](sharemanager/README.md)。下文记录原双模块制品的生产配方及来源。
+
 本目录为 vinceglb/FileKit 0.16.0 官方提交
 e8876bcefec8e502ac61a0af45f00de02c253fbf 的独立 OHOS 构建入口。共享源码、社区源码、八份
 OHOS actual、两个 ABI handler 和 ArkTS 工厂的来源与补丁记录见

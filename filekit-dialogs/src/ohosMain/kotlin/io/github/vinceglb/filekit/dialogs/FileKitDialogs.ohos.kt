@@ -3,8 +3,8 @@ package io.github.vinceglb.filekit.dialogs
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exceptions.FileKitException
-import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.mimeType
+import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,10 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 public actual class FileKitDialogSettings {
     public actual companion object {
@@ -21,7 +24,9 @@ public actual class FileKitDialogSettings {
     }
 }
 
-public actual class FileKitOpenFileSettings(public val onError: (Throwable) -> Unit = { throw it }) {
+public actual class FileKitOpenFileSettings(
+    public val onError: (Throwable) -> Unit = { throw it }
+) {
     public actual companion object {
         public actual fun createDefault(): FileKitOpenFileSettings = FileKitOpenFileSettings()
     }
@@ -55,15 +60,20 @@ internal actual suspend fun FileKit.platformOpenFilePicker(
                     require(maximum in 1..50) { "maxItems must be in 1..50" }
                     val request = buildJsonObject {
                         put("operation", "pick")
-                        put("type", when (type) {
-                            FileKitType.Image -> "image"
-                            FileKitType.Video -> "video"
-                            FileKitType.ImageAndVideo -> "media"
-                            is FileKitType.File -> "file"
-                        })
+                        put(
+                            "type",
+                            when (type) {
+                                FileKitType.Image -> "image"
+                                FileKitType.Video -> "video"
+                                FileKitType.ImageAndVideo -> "media"
+                                is FileKitType.File -> "file"
+                            }
+                        )
                         put("maxItems", maximum)
-                        if (type is FileKitType.File) putJsonArray("extensions") {
-                            type.extensions?.forEach { add(normalizedExtension(it)) }
+                        if (type is FileKitType.File) {
+                            putJsonArray("extensions") {
+                                type.extensions?.forEach { add(normalizedExtension(it)) }
+                            }
                         }
                         directory?.let { put("directory", it.path) }
                     }
@@ -75,7 +85,11 @@ internal actual suspend fun FileKit.platformOpenFilePicker(
                     } catch (invalid: IllegalArgumentException) {
                         throw invalid
                     } catch (error: Throwable) {
-                        emit(FileKitPickerState.Failed(FileKitPickerException("The OHOS file picker could not complete the operation.", error)))
+                        emit(
+                            FileKitPickerState.Failed(
+                                FileKitPickerException("The OHOS file picker could not complete the operation.", error)
+                            )
+                        )
                         return@flow
                     }
                     if (files.isNullOrEmpty()) {
@@ -116,12 +130,15 @@ internal actual suspend fun FileKit.platformOpenFileSaver(
     val extensions = buildFileSaverAllowedFileTypes(defaultExtension, allowedExtensions)?.map(::normalizedExtension)
     val name = if (suffix == null || suggestedName.endsWith(".$suffix", ignoreCase = true)) suggestedName else "$suggestedName.$suffix"
     return try {
-        OhosSystemDialogs.call(buildJsonObject {
-            put("operation", "save")
-            put("name", name)
-            extensions?.let { putJsonArray("extensions") { it.forEach { extension -> add(extension) } } }
-            directory?.let { put("directory", it.path) }
-        })?.singleOrNull()
+        OhosSystemDialogs
+            .call(
+                buildJsonObject {
+                    put("operation", "save")
+                    put("name", name)
+                    extensions?.let { putJsonArray("extensions") { it.forEach { extension -> add(extension) } } }
+                    directory?.let { put("directory", it.path) }
+                }
+            )?.singleOrNull()
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (invalid: IllegalArgumentException) {
@@ -138,11 +155,13 @@ private fun normalizedExtension(value: String): String = value.removePrefix(".")
 public actual fun FileKit.openFileWithDefaultApplication(file: PlatformFile, openFileSettings: FileKitOpenFileSettings) {
     CoroutineScope(Dispatchers.Main).launch {
         try {
-            OhosSystemDialogs.call(buildJsonObject {
-                put("operation", "open")
-                put("path", file.path)
-                put("mime", file.mimeType()?.toString() ?: "application/octet-stream")
-            })
+            OhosSystemDialogs.call(
+                buildJsonObject {
+                    put("operation", "open")
+                    put("path", file.path)
+                    put("mime", file.mimeType()?.toString() ?: "application/octet-stream")
+                }
+            )
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Throwable) {
@@ -164,10 +183,7 @@ public actual suspend fun FileKit.shareFile(file: PlatformFile, shareSettings: F
 public actual suspend fun FileKit.shareFile(files: List<PlatformFile>, shareSettings: FileKitShareSettings) {
     require(files.isNotEmpty()) { "At least one file is required" }
     try {
-        OhosSystemDialogs.call(buildJsonObject {
-            put("operation", "share")
-            putJsonArray("paths") { files.forEach { add(it.path) } }
-        })
+        OhosSystemDialogs.share(files)
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (invalid: IllegalArgumentException) {
