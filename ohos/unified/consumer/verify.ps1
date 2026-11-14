@@ -16,9 +16,13 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$KotlinNativeHome,
     [Parameter(Mandatory = $true)]
+    [string]$KonanDataDir,
+    [Parameter(Mandatory = $true)]
     [string]$MergeReport,
     [Parameter(Mandatory = $true)]
     [string]$JavaHome,
+    [Parameter(Mandatory = $true)]
+    [string]$AndroidSdkRoot,
     [string]$StandardGradleUserHome,
     [string]$CpfGradleUserHome,
     [string]$StandardKotlinVersion = '2.4.20',
@@ -45,6 +49,12 @@ if (-not (Test-Path -LiteralPath $MergeReport)) {
 if (-not (Test-Path -LiteralPath (Join-Path $JavaHome 'bin/java.exe'))) {
     throw 'JavaHome must contain bin/java.exe.'
 }
+if (-not (Test-Path -LiteralPath $KonanDataDir)) {
+    throw 'KonanDataDir does not exist.'
+}
+if (-not (Test-Path -LiteralPath (Join-Path $AndroidSdkRoot 'platforms/android-37.0'))) {
+    throw 'AndroidSdkRoot must contain platforms/android-37.0.'
+}
 
 $standardProject = Join-Path $PSScriptRoot 'standard'
 $ohosProject = Join-Path $PSScriptRoot 'ohos'
@@ -66,6 +76,7 @@ $standardTasks = @(
     "-PkotlinVersion=$StandardKotlinVersion",
     "-PagpVersion=$AndroidGradlePluginVersion",
     "-PfilekitMergeReport=$MergeReport",
+    '-Dorg.gradle.jvmargs=-Xmx1536m',
     'verifyFileKitResolution',
     '--max-workers=1',
     '--console=plain'
@@ -80,6 +91,7 @@ $ohosTasks = @(
     "-PcpfDependencyRepository=$CpfDependencyRepository",
     "-Pkotlin.native.home=$KotlinNativeHome",
     "-PfilekitMergeReport=$MergeReport",
+    '-Dorg.gradle.jvmargs=-Xmx1536m',
     'verifyFileKitResolution',
     '--max-workers=1',
     '--console=plain'
@@ -87,8 +99,14 @@ $ohosTasks = @(
 
 $previousGradleUserHome = $env:GRADLE_USER_HOME
 $previousJavaHome = $env:JAVA_HOME
+$previousKonanDataDir = $env:KONAN_DATA_DIR
+$previousAndroidHome = $env:ANDROID_HOME
+$previousAndroidSdkRoot = $env:ANDROID_SDK_ROOT
 try {
     $env:JAVA_HOME = $JavaHome
+    $env:KONAN_DATA_DIR = $KonanDataDir
+    $env:ANDROID_HOME = $AndroidSdkRoot
+    $env:ANDROID_SDK_ROOT = $AndroidSdkRoot
     $env:GRADLE_USER_HOME = $standardGradleUserHome
     & $StandardGradleWrapper @standardTasks
     if ($LASTEXITCODE -ne 0) {
@@ -110,6 +128,21 @@ try {
         Remove-Item Env:JAVA_HOME -ErrorAction SilentlyContinue
     } else {
         $env:JAVA_HOME = $previousJavaHome
+    }
+    if ($null -eq $previousKonanDataDir) {
+        Remove-Item Env:KONAN_DATA_DIR -ErrorAction SilentlyContinue
+    } else {
+        $env:KONAN_DATA_DIR = $previousKonanDataDir
+    }
+    if ($null -eq $previousAndroidHome) {
+        Remove-Item Env:ANDROID_HOME -ErrorAction SilentlyContinue
+    } else {
+        $env:ANDROID_HOME = $previousAndroidHome
+    }
+    if ($null -eq $previousAndroidSdkRoot) {
+        Remove-Item Env:ANDROID_SDK_ROOT -ErrorAction SilentlyContinue
+    } else {
+        $env:ANDROID_SDK_ROOT = $previousAndroidSdkRoot
     }
 }
 

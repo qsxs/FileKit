@@ -36,4 +36,7 @@ val consumerKotlin = extensions.getByType<KotlinMultiplatformExtension>()
 extra["filekitCompileTasks"] = listOf("ohosArm64", "ohosX64").map { targetName ->
     consumerKotlin.targets.getByName(targetName).compilations.getByName("main").compileKotlinTaskName
 }
+extra["filekitCompileConfigurations"] = listOf("ohosArm64", "ohosX64").associateWith { targetName ->
+    consumerKotlin.targets.getByName(targetName).compilations.getByName("main").compileDependencyConfigurationName
+}
 apply(from = rootProject.file("../resolution-report.gradle.kts"))

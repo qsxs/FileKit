@@ -1,12 +1,13 @@
 import groovy.json.JsonSlurper
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import java.io.File
 import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 val filekitTargets = extra["filekitTargets"] as List<Map<String, String>>
 val filekitCompileTasks = extra["filekitCompileTasks"] as List<String>
+val filekitCompileConfigurations = extra["filekitCompileConfigurations"] as Map<String, String>
 val filekitVersion = providers.gradleProperty("filekitVersion").get()
 val filekitGroup = "io.github.qsxs.cpf.filekit"
 
@@ -27,14 +28,12 @@ fun klibNativeTargets(file: File): String {
     }
 }
 
-fun readFileKitHash(report: Map<*, *>, rootModule: String, leaf: String): Pair<String, String>? {
+fun readFileKitHash(report: Map<*, *>, rootModule: String, leaf: String): String? {
     val modules = report["modules"] as? Map<*, *> ?: return null
     val module = modules[rootModule] as? Map<*, *> ?: return null
     val targets = module["targets"] as? Map<*, *> ?: return null
     val target = targets[leaf] as? Map<*, *> ?: return null
-    val artifact = target["artifact"] as? String ?: return null
-    val hash = target["artifactSha256"] as? String ?: return null
-    return artifact to hash
+    return target["artifactSha256"] as? String
 }
 
 tasks.register("verifyFileKitResolution") {
@@ -48,32 +47,33 @@ tasks.register("verifyFileKitResolution") {
             JsonSlurper().parse(reportFile) as? Map<*, *>
                 ?: error("Merge report is not a JSON object: $path")
         }
-        val kotlin = extensions.getByType<KotlinMultiplatformExtension>()
-
         for (targetSpec in filekitTargets) {
             val targetName = targetSpec.getValue("target")
             val leaf = targetSpec.getValue("leaf")
-            val target = kotlin.targets.getByName(targetName)
-            val compilation = target.compilations.getByName("main")
-            val configuration = configurations.getByName(compilation.compileDependencyConfigurationName)
-            val resolved = configuration.incoming.artifacts.artifacts.filter { artifact ->
+            val configurationName = filekitCompileConfigurations.getValue(targetName)
+            val configuration = configurations.getByName(configurationName)
+            val incoming = if (targetSpec["platform"] == "androidJvm") {
+                configuration.incoming.artifactView {
+                    attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "aar")
+                    componentFilter { (it as? ModuleComponentIdentifier)?.group == filekitGroup }
+                }.artifacts
+            } else {
+                configuration.incoming.artifacts
+            }
+            val resolved = incoming.artifacts.filter { artifact ->
                 val component = artifact.id.componentIdentifier as? ModuleComponentIdentifier
-                component?.group == filekitGroup &&
-                    artifact.file.extension.lowercase() in setOf("aar", "klib") &&
-                    (artifact.file.name.contains("filekit-core", ignoreCase = true) ||
-                        artifact.file.name.contains("filekit-dialogs", ignoreCase = true))
+                component?.group == filekitGroup && artifact.file.extension.lowercase() in setOf("aar", "klib")
             }
 
             for (rootModule in listOf("filekit-core", "filekit-dialogs")) {
-                val expected = expectedReport?.let { readFileKitHash(it, rootModule, leaf) }
+                val expected = expectedReport?.let {
+                    checkNotNull(readFileKitHash(it, rootModule, leaf)) { "Missing checksum for $rootModule-$leaf" }
+                }
                 val candidates = resolved.filter { artifact ->
                     val component = artifact.id.componentIdentifier as? ModuleComponentIdentifier
                     val ownerModule = component?.module
-                    val expectedArtifactName = expected?.first
-                    (expectedArtifactName != null && artifact.file.name == expectedArtifactName) ||
-                        (expectedArtifactName == null &&
-                            (artifact.file.name.contains(rootModule, ignoreCase = true) ||
-                                ownerModule == rootModule || ownerModule == "$rootModule-$leaf"))
+                    // Gradle 可按变体中的逻辑文件名存储制品，先按实际选中的 Maven 坐标识别。
+                    ownerModule == rootModule || ownerModule == "$rootModule-$leaf"
                 }
                 check(candidates.size == 1) {
                     "Expected one resolved $rootModule artifact for $targetName, found ${candidates.size} in ${configuration.name}."
@@ -117,7 +117,7 @@ tasks.register("verifyFileKitResolution") {
 
                 val digest = fileSha256(artifact.file)
                 if (expected != null) {
-                    check(digest.equals(expected.second, ignoreCase = true)) {
+                    check(digest.equals(expected, ignoreCase = true)) {
                         "Resolved artifact SHA-256 differs from merge report for ${artifact.file.name}"
                     }
                 }

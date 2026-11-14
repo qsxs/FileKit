@@ -26,6 +26,7 @@ dependencyResolutionManagement {
                 includeGroup("io.github.qsxs.cpf.filekit")
             }
         }
+        maven(url = providers.gradleProperty("cpfPluginRepository").get())
         maven(url = providers.gradleProperty("cpfDependencyRepository").get())
         mavenCentral()
         google()

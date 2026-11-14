@@ -5,7 +5,7 @@
 verify.ps1 通过参数接收两个 Gradle Wrapper、Maven 仓库地址、工具链版本和 FileKit 版本；它不会发布制品，也不会启动设备。
 
 ~~~powershell
-& .\verify.ps1 -FileKitRepository 'D:\staging\filekit-unified' -Version '0.16.0-cpf-unified-<SHA12>' -SourceCommit '<40-character-commit-sha>' -StandardGradleWrapper 'D:\tools\gradle-9.7.1\bin\gradle.bat' -CpfGradleWrapper 'D:\tools\gradle-8.11.1\bin\gradle.bat' -JavaHome 'D:\tools\jdk-21' -CpfPluginRepository 'https://maven.eazytec-cloud.com/nexus/repository/maven-develop/' -CpfDependencyRepository 'https://maven.eazytec-cloud.com/nexus/repository/maven-public/' -KotlinNativeHome 'D:\toolchains\kotlin-native-2.4.21-0.1.0-13' -MergeReport 'D:\staging\merge-report.json'
+& .\verify.ps1 -FileKitRepository 'D:\staging\filekit-unified' -Version '0.16.0-cpf-unified-<SHA12>' -SourceCommit '<40-character-commit-sha>' -StandardGradleWrapper 'D:\tools\gradle-9.7.1\bin\gradle.bat' -CpfGradleWrapper 'D:\tools\gradle-8.11.1\bin\gradle.bat' -JavaHome 'D:\tools\jdk-21' -AndroidSdkRoot 'D:\Android\Sdk' -CpfPluginRepository 'https://maven.eazytec-cloud.com/nexus/repository/maven-develop/' -CpfDependencyRepository 'https://maven.eazytec-cloud.com/nexus/repository/maven-public/' -KotlinNativeHome 'D:\toolchains\kotlin-native-2.4.21-0.1.0-13' -KonanDataDir 'D:\build-cache\konan' -MergeReport 'D:\staging\merge-report.json'
 ~~~
 
 仓库地址也可以指向已发布的 Pages Maven 根目录。标准构建编译 Android、iOS arm64 与 iOS simulator arm64；CPF 构建编译 OHOS arm64 与 x64。共同源码检查 PlatformFile.name，平台源码检查 FileKit.shareFile，确保共同 API 与平台叶都能解析。

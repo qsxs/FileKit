@@ -8,7 +8,7 @@ plugins {
 val filekitVersion = providers.gradleProperty("filekitVersion").get()
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "io.github.qsxs.filekit.consumer.standard"
         compileSdk = 37
         minSdk = 24
@@ -23,7 +23,11 @@ kotlin {
             dependsOn(commonMain)
         }
         getByName("androidMain").dependsOn(mobileMain)
-        getByName("iosMain").dependsOn(mobileMain)
+        val iosMain = maybeCreate("iosMain").apply {
+            dependsOn(mobileMain)
+        }
+        getByName("iosArm64Main").dependsOn(iosMain)
+        getByName("iosSimulatorArm64Main").dependsOn(iosMain)
 
         commonMain.dependencies {
             implementation("io.github.qsxs.cpf.filekit:filekit-core:$filekitVersion")
@@ -40,5 +44,8 @@ extra["filekitTargets"] = listOf(
 val consumerKotlin = extensions.getByType<KotlinMultiplatformExtension>()
 extra["filekitCompileTasks"] = listOf("android", "iosArm64", "iosSimulatorArm64").map { targetName ->
     consumerKotlin.targets.getByName(targetName).compilations.getByName("main").compileKotlinTaskName
+}
+extra["filekitCompileConfigurations"] = listOf("android", "iosArm64", "iosSimulatorArm64").associateWith { targetName ->
+    consumerKotlin.targets.getByName(targetName).compilations.getByName("main").compileDependencyConfigurationName
 }
 apply(from = rootProject.file("../resolution-report.gradle.kts"))
