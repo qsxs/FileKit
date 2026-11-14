@@ -1,22 +1,40 @@
+@file:OptIn(io.github.vinceglb.filekit.FileKitOhosInternalApi::class, kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package io.github.vinceglb.filekit.dialogs
 
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.cacheDir
+import io.github.vinceglb.filekit.copyOhosMediaFile
 import io.github.vinceglb.filekit.exceptions.FileKitException
+import io.github.vinceglb.filekit.isDirectory
 import io.github.vinceglb.filekit.mimeType
+import io.github.vinceglb.filekit.parent
 import io.github.vinceglb.filekit.path
+import io.github.vinceglb.filekit.size
+import io.github.vinceglb.filekit.toKotlinxIoPath
+import io.github.vinceglb.filekit.withOhosMediaTemporaryFile
+import kotlinx.cinterop.toKString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
+import platform.posix.errno
+import platform.posix.rename
+import platform.posix.strerror
 
 public actual class FileKitDialogSettings {
     public actual companion object {
@@ -116,7 +134,18 @@ internal actual suspend fun FileKit.platformOpenFilePicker(
 public actual suspend fun FileKit.openDirectoryPicker(
     directory: PlatformFile?,
     dialogSettings: FileKitDialogSettings,
-): PlatformFile? = throw FileKitDialogException("Directory picking is not supported on OHOS")
+): PlatformFile? = try {
+    OhosSystemDialogs.call(
+        buildJsonObject {
+            put("operation", "directory")
+            directory?.let { put("directory", it.path) }
+        },
+    )?.single()
+} catch (cancelled: CancellationException) {
+    throw cancelled
+} catch (error: Throwable) {
+    throw FileKitDialogException("The OHOS directory picker could not complete the operation.", error)
+}
 
 internal actual suspend fun FileKit.platformOpenFileSaver(
     suggestedName: String,
@@ -175,7 +204,64 @@ public actual suspend fun FileKit.openCameraPicker(
     cameraFacing: FileKitCameraFacing,
     destinationFile: PlatformFile,
     openCameraSettings: FileKitOpenCameraSettings,
-): PlatformFile? = throw FileKitDialogException("Camera picking is not supported on OHOS")
+): PlatformFile? = try {
+    val runInHost = OhosSystemDialogs.captureMediaOperation<PlatformFile?>()
+    val facing = when (cameraFacing) {
+        FileKitCameraFacing.System -> "CAMERA_POSITION_UNSPECIFIED"
+        FileKitCameraFacing.Front -> "CAMERA_POSITION_FRONT"
+        FileKitCameraFacing.Back -> "CAMERA_POSITION_BACK"
+    }
+    val suffix = when (type) {
+        FileKitCameraType.Photo -> ".jpg"
+    }
+    withOhosMediaTemporaryFile(cacheDir, suffix) { staged ->
+        runInHost { awaitDialog ->
+            val request = buildJsonObject {
+                put("operation", "camera")
+                put("path", staged.path)
+                put("facing", facing)
+            }
+            if (awaitDialog(request) == null) return@runInHost null
+            withContext(Dispatchers.IO) {
+                if (staged.size() <= 0) throw FileKitDialogException("The OHOS camera did not write a photo")
+                if (destinationFile.isDirectory()) throw FileKitDialogException("Camera destination must be a file")
+                commitCameraPhoto(staged, destinationFile)
+            }
+            destinationFile
+        }
+    }
+} catch (denied: CameraPermissionDenied) {
+    null
+} catch (cancelled: CancellationException) {
+    throw cancelled
+} catch (error: FileKitDialogException) {
+    throw error
+} catch (error: Exception) {
+    throw FileKitDialogException("The OHOS camera picker could not complete the operation.", error)
+}
+
+private suspend fun commitCameraPhoto(staged: PlatformFile, destination: PlatformFile) {
+    val localPath = try {
+        destination.toKotlinxIoPath()
+    } catch (_: IllegalStateException) {
+        null
+    }
+    if (localPath == null) {
+        // Provider 没有通用的原子替换接口。打开授权输出是提交点，之后完成写入。
+        currentCoroutineContext().ensureActive()
+        withContext(NonCancellable) { copyOhosMediaFile(staged, destination) }
+        return
+    }
+
+    val directory = destination.parent() ?: PlatformFile(".")
+    withOhosMediaTemporaryFile(directory) { output ->
+        copyOhosMediaFile(staged, output)
+        currentCoroutineContext().ensureActive()
+        if (rename(output.path, localPath.toString()) != 0) {
+            throw FileKitDialogException("Cannot replace the OHOS camera destination: ${strerror(errno)?.toKString()}")
+        }
+    }
+}
 
 public actual suspend fun FileKit.shareFile(file: PlatformFile, shareSettings: FileKitShareSettings): Unit =
     shareFile(listOf(file), shareSettings)

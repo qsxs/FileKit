@@ -3,6 +3,7 @@
 package io.github.vinceglb.filekit
 
 import io.github.vinceglb.filekit.exceptions.FileKitException
+import io.github.vinceglb.filekit.utils.runSuspendCatchingFileKit
 import kotlinx.cinterop.*
 import platform.AbilityKit.AbilityRuntime.*
 
@@ -44,7 +45,12 @@ private inline fun applicationDirectory(
 }
 
 public actual suspend fun FileKit.saveImageToGallery(bytes: ByteArray, filename: String): Result<Unit> =
-    Result.failure(FileKitException("Saving images to the gallery is not supported on OHOS"))
+    runSuspendCatchingFileKit {
+        require(bytes.isNotEmpty()) { "Image bytes must not be empty" }
+        saveOhosGalleryAsset(filename, isVideo = false) { output -> output write bytes }
+    }
 
 public actual suspend fun FileKit.saveVideoToGallery(file: PlatformFile, filename: String): Result<Unit> =
-    Result.failure(FileKitException("Saving videos to the gallery is not supported on OHOS"))
+    runSuspendCatchingFileKit {
+        saveOhosGalleryAsset(filename, isVideo = true) { output -> copyOhosMediaFile(file, output) }
+    }

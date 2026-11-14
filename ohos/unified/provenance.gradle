@@ -1,0 +1,90 @@
+import groovy.json.JsonOutput
+import java.security.MessageDigest
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+
+def repositoryRoot = project.ext.filekitRepositoryRoot as File
+def sourceCommit = providers.gradleProperty('filekitSourceCommit').get()
+def staging = rootProject.file(providers.gradleProperty('filekitStaging').get()).canonicalFile
+def expectedGroup = 'io.github.qsxs.cpf.filekit'
+def expectedVersion = "0.16.0-cpf-unified-${sourceCommit.take(12)}"
+assert sourceCommit ==~ /[0-9a-f]{40}/ : 'A full FileKit source commit is required'
+
+def upstreamLicense = new File(repositoryRoot, 'LICENSE')
+def communityLicense = new File(repositoryRoot, 'ohos/provenance/vendor/community/LICENSE')
+def sourceRoot = new File(repositoryRoot, "${project.name}/src")
+def files = fileTree(sourceRoot) {
+    exclude '**/*Test/**'
+} + files(upstreamLicense, communityLicense)
+
+def provenance = layout.buildDirectory.file('unified-publication/provenance.json')
+def record = tasks.register('recordFileKitProvenance') {
+    inputs.files(files).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.property('sourceCommit', sourceCommit)
+    outputs.file(provenance)
+    doLast {
+        def hashes = new TreeMap<String, String>()
+        inputs.files.each { File source ->
+            if (source.isFile()) {
+                def path = repositoryRoot.toPath().relativize(source.toPath()).toString().replace(File.separator, '/')
+                hashes[path] = MessageDigest.getInstance('SHA-256').digest(source.bytes).encodeHex().toString()
+            }
+        }
+        def output = provenance.get().asFile
+        output.parentFile.mkdirs()
+        output.setText(JsonOutput.prettyPrint(JsonOutput.toJson([
+            repository: 'https://github.com/qsxs/FileKit',
+            sourceCommit: sourceCommit,
+            sha256: hashes,
+        ])) + '\n', 'UTF-8')
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = 'Unified'
+            url = staging.toURI()
+        }
+    }
+    publications.withType(MavenPublication).configureEach {
+        artifact(upstreamLicense) {
+            classifier = 'upstream-license'
+            extension = 'txt'
+        }
+        artifact(communityLicense) {
+            classifier = 'community-license'
+            extension = 'txt'
+        }
+        artifact(provenance) {
+            builtBy(record)
+            classifier = 'provenance'
+            extension = 'json'
+        }
+        pom {
+            url = 'https://github.com/qsxs/FileKit'
+            scm {
+                url = "https://github.com/qsxs/FileKit/tree/${sourceCommit}"
+                connection = 'scm:git:https://github.com/qsxs/FileKit.git'
+                developerConnection = 'scm:git:ssh://git@github.com/qsxs/FileKit.git'
+            }
+            licenses {
+                license {
+                    name = 'MIT License'
+                    url = 'https://opensource.org/license/mit/'
+                }
+            }
+        }
+    }
+}
+
+tasks.withType(PublishToMavenRepository).configureEach {
+    doFirst {
+        if (repository.name == 'Unified') {
+            assert publication.groupId == expectedGroup && publication.version == expectedVersion :
+                "Unexpected FileKit coordinates: ${publication.groupId}:${publication.artifactId}:${publication.version}"
+            def target = new File(staging, "${expectedGroup.replace('.', '/')}/${publication.artifactId}/${publication.version}")
+            assert !target.exists() : "FileKit version directory already exists: ${target}"
+        }
+    }
+}

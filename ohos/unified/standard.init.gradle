@@ -1,0 +1,23 @@
+gradle.beforeProject { project ->
+    if (project.path in [':filekit-core', ':filekit-dialogs']) {
+        project.pluginManager.withPlugin('maven-publish') {
+            project.ext.filekitRepositoryRoot = project.rootDir
+            project.apply from: new File(project.rootDir, 'ohos/unified/provenance.gradle')
+            project.afterEvaluate {
+                // 在 Vanniktech 默认 POM 填充完成后，将 SCM 指向本次构建提交。
+                def sourceCommit = project.providers.gradleProperty('filekitSourceCommit').get()
+                project.extensions.getByType(org.gradle.api.publish.PublishingExtension)
+                    .publications.withType(org.gradle.api.publish.maven.MavenPublication).configureEach {
+                    pom {
+                        url = 'https://github.com/qsxs/FileKit'
+                        scm {
+                            url = "https://github.com/qsxs/FileKit/tree/${sourceCommit}"
+                            connection = 'scm:git:https://github.com/qsxs/FileKit.git'
+                            developerConnection = 'scm:git:ssh://git@github.com/qsxs/FileKit.git'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

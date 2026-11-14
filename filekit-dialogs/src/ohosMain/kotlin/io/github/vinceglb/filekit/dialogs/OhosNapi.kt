@@ -18,6 +18,12 @@ internal class OhosNapi(val env: napi_env) {
         throw FileKitException("OHOS NAPI failed ($status)${detail?.let { ": $it" }.orEmpty()}")
     }
 
+    fun errorCodeOrNull(value: napi_value): Int? = try {
+        coerceString(get(value, "code")).toIntOrNull()
+    } catch (_: FileKitException) {
+        null
+    }
+
     fun describeError(value: napi_value): String = try {
         val code = get(value, "code")
         val message = get(value, "message")
@@ -41,6 +47,11 @@ internal class OhosNapi(val env: napi_env) {
         napi_load_module_with_info(env, name, null, it)
     }
     fun obj(): napi_value = result { napi_create_object(env, it) }
+    fun isObject(value: napi_value): Boolean = memScoped {
+        val type = alloc<napi_valuetype.Var>()
+        check(napi_typeof(env, value, type.ptr))
+        type.value == napi_valuetype.napi_object
+    }
     fun get(receiver: napi_value, name: String): napi_value = result { napi_get_named_property(env, receiver, name, it) }
     fun set(receiver: napi_value, name: String, value: napi_value) = check(napi_set_named_property(env, receiver, name, value))
     fun text(value: String): napi_value = result { napi_create_string_utf8(env, value, value.encodeToByteArray().size.convert(), it) }
@@ -79,10 +90,24 @@ internal class OhosNapi(val env: napi_env) {
         arguments.forEachIndexed { index, value -> args[index] = value }
         result { napi_new_instance(env, get(module, name), arguments.size.convert(), args, it) }
     }
-    fun call(receiver: napi_value, name: String, vararg arguments: napi_value): napi_value = memScoped {
+    fun call(receiver: napi_value, name: String, vararg arguments: napi_value): napi_value =
+        invoke(receiver, get(receiver, name), *arguments)
+
+    private fun invoke(receiver: napi_value, function: napi_value, vararg arguments: napi_value): napi_value = memScoped {
         val args = allocArray<napi_valueVar>(arguments.size)
         arguments.forEachIndexed { index, value -> args[index] = value }
-        result { napi_call_function(env, receiver, get(receiver, name), arguments.size.convert(), args, it) }
+        result { napi_call_function(env, receiver, function, arguments.size.convert(), args, it) }
+    }
+
+    fun requireCapability(capability: String) = memScoped {
+        val global = result { napi_get_global(env, it) }
+        val query = get(global, "canIUse")
+        val type = alloc<napi_valuetype.Var>()
+        check(napi_typeof(env, query, type.ptr))
+        // 某些 NAPI 宿主未导出全局查询函数，由系统模块调用报告实际可用性。
+        if (type.value == napi_valuetype.napi_function && !bool(invoke(global, query, text(capability)))) {
+            throw FileKitException("Required OHOS capability is unavailable: $capability")
+        }
     }
     fun reference(value: napi_value): napi_ref = memScoped {
         val output = alloc<napi_refVar>()

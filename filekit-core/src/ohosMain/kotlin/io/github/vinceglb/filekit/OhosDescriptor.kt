@@ -17,15 +17,22 @@ internal class OhosDescriptor(fd: Int, val uri: String, val name: String) {
     private val cleaner = createCleaner(state) { it.destroy() }
     val isOpen: Boolean get() = state.isOpen
     fun close() = state.close()
+    fun closeChecked() = state.close(checked = true)
     fun acquire(): OhosDescriptor = OhosDescriptor(duplicate(), uri, name)
     fun <T> borrowed(block: (Int) -> T): T {
         val borrowed = duplicate()
         return try { block(borrowed) } finally { platform.posix.close(borrowed) }
     }
     fun source(): RawSource = DescriptorSource(duplicate())
+    fun newMediaSink(): RawSink = DescriptorSink(duplicate(), checkedClose = true)
+    fun isWritable(): Boolean = borrowed { fd ->
+        val flags = fcntl(fd, F_GETFL)
+        if (flags < 0) throw ioError("read access mode")
+        flags and O_ACCMODE != O_RDONLY
+    }
+
     fun sink(append: Boolean): RawSink {
-        // dup 共享 OFD，不能设置 O_APPEND 影响其它流；不以初始 EOF+pwrite 冒充追加。
-        if (append) throw IOException("Appending to imported picker descriptors is not supported on OHOS")
+        if (append) return DescriptorSink(openAppend(), checkedClose = true, append = true)
         val output = duplicate()
         try {
             if (ftruncate(output, 0) != 0) throw ioError("truncate")
@@ -35,6 +42,35 @@ internal class OhosDescriptor(fd: Int, val uri: String, val name: String) {
             throw error
         }
     }
+
+    private fun openAppend(): Int {
+        // 独立打开系统授权的本地文件，避免通过 dup 改变其它流的 O_APPEND。
+        if (!isWritable() || !isLocalDocumentUri(uri)) {
+            throw IOException("OHOS cannot reopen this picker file with append access")
+        }
+        val path = localDocumentPath(uri)
+        return borrowed { original ->
+            val output = open(path, O_WRONLY or O_APPEND or O_NOFOLLOW or O_CLOEXEC or O_NONBLOCK)
+            if (output < 0) throw ioError("open for append")
+            try {
+                memScoped {
+                    val previous = alloc<stat>()
+                    val reopened = alloc<stat>()
+                    if (fstat(original, previous.ptr) != 0 || fstat(output, reopened.ptr) != 0) throw ioError("inspect append file")
+                    if (reopened.st_mode.toInt() and S_IFMT != S_IFREG ||
+                        previous.st_dev != reopened.st_dev || previous.st_ino != reopened.st_ino
+                    ) {
+                        throw IOException("OHOS append target no longer identifies the selected file")
+                    }
+                }
+                output
+            } catch (error: Throwable) {
+                platform.posix.close(output)
+                throw error
+            }
+        }
+    }
+
     private fun duplicate(): Int = state.duplicate()
 }
 
@@ -60,11 +96,11 @@ private class DescriptorState(fd: Int) {
     fun duplicate(): Int = locked {
         dup(checkedFd()).also { if (it < 0) throw ioError("dup") }
     }
-    fun close() = locked {
+    fun close(checked: Boolean = false): Unit = locked {
         if (value >= 0) {
             val previous = value
             value = -1
-            platform.posix.close(previous)
+            if (platform.posix.close(previous) != 0 && checked) throw ioError("close")
         }
     }
     fun destroy() {
@@ -74,7 +110,7 @@ private class DescriptorState(fd: Int) {
     }
 }
 
-private class DescriptorSource(fd: Int) : RawSource {
+internal class DescriptorSource(fd: Int) : RawSource {
     private val state = DescriptorState(fd)
     @Suppress("unused")
     private val cleaner = createCleaner(state) { it.destroy() }
@@ -98,7 +134,11 @@ private class DescriptorSource(fd: Int) : RawSource {
     override fun close() = state.close()
 }
 
-private class DescriptorSink(fd: Int) : RawSink {
+internal class DescriptorSink(
+    fd: Int,
+    private val checkedClose: Boolean = false,
+    private val append: Boolean = false,
+) : RawSink {
     private val state = DescriptorState(fd)
     private var offset = 0L
     @Suppress("unused")
@@ -111,18 +151,20 @@ private class DescriptorSink(fd: Int) : RawSink {
             bytes.usePinned {
                 var written = 0
                 while (written < bytes.size) {
-                    val count = pwrite(fd, it.addressOf(written), (bytes.size - written).convert(), offset)
+                    val address = it.addressOf(written)
+                    val length = (bytes.size - written).convert<size_t>()
+                    val count = if (append) write(fd, address, length) else pwrite(fd, address, length, offset)
                     if (count < 0 && errno == EINTR) continue
                     if (count <= 0) throw ioError("write")
                     written += count.toInt()
-                    offset += count
+                    if (!append) offset += count
                 }
             }
             remaining -= bytes.size
         }
     }
     override fun flush(): Unit = state.using { fd -> if (fsync(fd) != 0) throw ioError("flush") }
-    override fun close() = state.close()
+    override fun close() = state.close(checkedClose)
 }
 
 private fun ioError(operation: String): IOException = IOException("OHOS descriptor $operation failed: ${strerror(errno)?.toKString()}")

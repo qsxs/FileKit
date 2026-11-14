@@ -1,0 +1,102 @@
+name: CPF FileKit unified release checks
+run-name: CPF FileKit · ${{ github.sha }}
+
+on:
+  push:
+    branches: [codex/ohos-filekit-unified]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apple:
+    if: github.repository == 'qsxs/FileKit'
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - name: 构建同提交 Android、iOS 和共享制品
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || test "${PIPESTATUS[1]}" = 0
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-37.0'
+          xcodebuild -version
+          tasks=()
+          for module in filekit-core filekit-dialogs; do
+            for variant in KotlinMultiplatform Android IosArm64 IosSimulatorArm64; do
+              tasks+=(":${module}:publish${variant}PublicationToUnifiedRepository")
+            done
+          done
+          ./gradlew -I ohos/unified/standard.init.gradle "${tasks[@]}" \
+            --console=plain --max-workers=1 --no-configuration-cache \
+            -PRELEASE_SIGNING_ENABLED=false -PGROUP=io.github.qsxs.cpf.filekit \
+            "-PVERSION_NAME=0.16.0-cpf-unified-${GITHUB_SHA:0:12}" \
+            "-PfilekitSourceCommit=$GITHUB_SHA" "-PfilekitStaging=$RUNNER_TEMP/filekit-repository"
+      - name: 上传同提交标准制品
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: filekit-standard-${{ github.sha }}
+          path: ${{ runner.temp }}/filekit-repository
+          if-no-files-found: error
+          retention-days: 7
+      - name: 运行 iOS 模拟器回归
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! xcrun simctl list devices available | grep 'iPhone' >/dev/null; then
+            xcodebuild -downloadPlatform iOS
+          fi
+          ./gradlew :filekit-core:iosSimulatorArm64Test :filekit-dialogs:iosSimulatorArm64Test \
+            --continue --max-workers=1 --console=plain -PRELEASE_SIGNING_ENABLED=false
+      - name: 上传 iOS 测试回执
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: filekit-ios-tests-${{ github.sha }}
+          path: filekit-*/build/test-results/iosSimulatorArm64Test/*.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+  android:
+    if: github.repository == 'qsxs/FileKit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - name: 准备 Android 37 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || test "${PIPESTATUS[1]}" = 0
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-37.0'
+      - name: 运行 Android 回归
+        run: >-
+          ./gradlew :filekit-core:testAndroidHostTest :filekit-dialogs:testAndroidHostTest
+          --continue --max-workers=1 --console=plain -PRELEASE_SIGNING_ENABLED=false
+      - name: 上传 Android 测试回执
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: filekit-android-tests-${{ github.sha }}
+          path: filekit-*/build/test-results/testAndroidHostTest/*.xml
+          if-no-files-found: warn
+          retention-days: 7

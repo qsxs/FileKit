@@ -5,18 +5,22 @@ package io.github.vinceglb.filekit
 import io.github.vinceglb.filekit.exceptions.FileKitException
 import io.github.vinceglb.filekit.mimeType.MimeType
 import kotlinx.cinterop.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.Serializable
 import platform.posix.*
 import kotlin.time.Instant
 
-/** 文件系统路径或由系统选择器显式导入的描述符。 */
+/** 文件系统路径、选择器导入的文件描述符或授权目录内的条目。 */
 @Serializable(with = PlatformFileSerializer::class)
 public actual class PlatformFile internal constructor(
     internal val ioPath: Path,
     @Suppress("UNUSED_PARAMETER") marker: Unit,
     internal val descriptor: OhosDescriptor? = null,
+    internal val directoryEntry: OhosDirectory? = null,
 ) {
     init {
         require('\u0000' !in ioPath.toString()) { "File paths must not contain NUL" }
@@ -24,12 +28,18 @@ public actual class PlatformFile internal constructor(
     }
 
     /** 释放导入的 owner 描述符；已打开的流继续有效，普通路径无需释放。 */
-    public fun close(): Unit { descriptor?.close() }
+    public fun close() {
+        descriptor?.close()
+        directoryEntry?.close()
+    }
 
     /** 获取独立所有权；关闭原对象不影响此借用或其已打开的流。 */
-    public fun acquireLease(): PlatformFile = descriptor?.acquire()?.let { owned ->
-        try { PlatformFile(ioPath, Unit, owned) } catch (error: Throwable) { owned.close(); throw error }
-    } ?: this
+    public fun acquireLease(): PlatformFile {
+        directoryEntry?.let { return PlatformFile(it.acquire()) }
+        return descriptor?.acquire()?.let { owned ->
+            try { PlatformFile(ioPath, Unit, owned) } catch (error: Throwable) { owned.close(); throw error }
+        } ?: this
+    }
 
     public actual override fun toString(): String = path
     override fun equals(other: Any?): Boolean = other is PlatformFile && path == other.path
@@ -44,12 +54,25 @@ public actual class PlatformFile internal constructor(
             return try { PlatformFile(Path("/proc/self/fd/$duplicate"), Unit, owned) }
             catch (error: Throwable) { owned.close(); throw error }
         }
+
+        /**
+         * 复制系统选择器授予的目录 FD。子项通过该 FD 访问，调用者仍拥有原始 FD。
+         * [writeAllowed] 表示调用方获得了写入授权，系统仍会检查实际权限。
+         */
+        public fun fromDirectoryDescriptor(fd: Int, uri: String, name: String, writeAllowed: Boolean): PlatformFile {
+            require(fd >= 0 && uri.startsWith("file://") && name.isNotBlank())
+            val duplicate = dup(fd)
+            if (duplicate < 0) throw FileKitException("Cannot duplicate picker directory descriptor")
+            return PlatformFile(OhosDirectory.create(OhosDescriptor(duplicate, uri, name), writeAllowed))
+        }
     }
 }
 
+internal fun PlatformFile(entry: OhosDirectory): PlatformFile = PlatformFile(Path("."), Unit, directoryEntry = entry)
+
 public actual fun PlatformFile(path: Path): PlatformFile = PlatformFile(path, Unit)
 public actual fun PlatformFile.toKotlinxIoPath(): Path {
-    check(descriptor == null) { "Picker URI has no sandbox path; use source()/sink() or copyTo()" }
+    check(descriptor == null && directoryEntry == null) { "Picker URI has no sandbox path; use source()/sink() or copyTo()" }
     return ioPath
 }
 public actual val PlatformFile.extension: String get() = name.substringAfterLast('.', "")
@@ -57,7 +80,7 @@ public actual val PlatformFile.nameWithoutExtension: String get() = name.substri
 
 // 不要求目标已存在，尚未创建的目标也可以计算绝对路径。
 public actual fun PlatformFile.absolutePath(): String {
-    if (descriptor != null || isAbsolute()) return path
+    if (isAbsolute()) return path
     return memScoped {
         val cwd = getcwd(null, 0u) ?: throw FileKitException("getcwd failed: ${strerror(errno)?.toKString()}")
         try {
@@ -69,12 +92,23 @@ public actual fun PlatformFile.absolutePath(): String {
 }
 
 public actual inline fun PlatformFile.list(block: (List<PlatformFile>) -> Unit): Unit = block(list())
-public actual fun PlatformFile.list(): List<PlatformFile> = SystemFileSystem.list(toKotlinxIoPath()).map(::PlatformFile)
+public actual fun PlatformFile.list(): List<PlatformFile> {
+    val entry = directoryEntry ?: return SystemFileSystem.list(toKotlinxIoPath()).map(::PlatformFile)
+    val result = mutableListOf<PlatformFile>()
+    try {
+        entry.names().forEach { result += PlatformFile(entry.child(it)) }
+        return result
+    } catch (error: Throwable) {
+        result.forEach { it.close() }
+        throw error
+    }
+}
 
 // POSIX stat 的 ctime 是状态变更时间，不能当成创建时间。
 public actual fun PlatformFile.createdAt(): Instant? = null
 
 public actual fun PlatformFile.lastModified(): Instant = memScoped {
+    directoryEntry?.let { return it.lastModified() }
     val info = alloc<stat>()
     if ((descriptor?.borrowed { fstat(it, info.ptr) } ?: stat(path, info.ptr)) != 0) {
         throw FileKitException("Cannot stat '$path': ${strerror(errno)?.toKString()}")
@@ -112,19 +146,29 @@ public actual fun PlatformFile.mimeType(): MimeType? = when (extension.lowercase
 
 public actual fun PlatformFile.startAccessingSecurityScopedResource(): Boolean = true
 public actual fun PlatformFile.stopAccessingSecurityScopedResource(): Unit = Unit
-public actual suspend fun PlatformFile.bookmarkData(): BookmarkData {
-    check(descriptor == null) { "Picker permissions are temporary; copy into the sandbox before bookmarking" }
-    return BookmarkData(absolutePath().encodeToByteArray())
+public actual suspend fun PlatformFile.bookmarkData(): BookmarkData = withContext(Dispatchers.IO) {
+    directoryEntry?.let {
+        it.ensureAccessible()
+        return@withContext persistOhosBookmark(it.uri, directory = true, it.writeAllowed, it.segments.joinToString("/"))
+    }
+    descriptor?.let {
+        return@withContext persistOhosBookmark(it.uri, directory = false, it.isWritable())
+    }
+    BookmarkData(absolutePath().encodeToByteArray())
 }
-public actual fun PlatformFile.releaseBookmark(): Unit = Unit
+
+public actual fun PlatformFile.releaseBookmark() {
+    val uri = directoryEntry?.uri ?: descriptor?.uri ?: return
+    revokeOhosBookmark(uri)
+}
 public actual fun PlatformFile.Companion.fromBookmarkData(bookmarkData: BookmarkData): PlatformFile =
-    PlatformFile(bookmarkData.bytes.decodeToString(throwOnInvalidSequence = true))
+    resolveBookmarkData(bookmarkData).file
 
 @PublishedApi
 internal fun PlatformFile.withPath(path: Path): PlatformFile = PlatformFile(path)
 
 public actual fun PlatformFile.Companion.resolveBookmarkData(bookmarkData: BookmarkData): BookmarkResolution =
-    BookmarkResolution(fromBookmarkData(bookmarkData), isStale = false, shouldRefresh = false)
+    restoreOhosBookmark(bookmarkData)
 
 internal actual fun PlatformFile.deleteIfSymbolicLink(): Boolean = memScoped {
     val filePath = toKotlinxIoPath().toString()
